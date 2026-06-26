@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helper functions ────────────────────────────────────────────────
+    // ¿El usuario es miembro de la empresa?
+    function isMember(companyId) {
+      return exists(/databases/$(database)/documents/memberships/$(request.auth.uid + '_' + companyId));
+    }
+
+    // ¿Qué rol tiene el usuario en la empresa?
+    function myRole(companyId) {
+      let mem = get(/databases/$(database)/documents/memberships/$(request.auth.uid + '_' + companyId));
+      return mem.data.role;
+    }
+
+    function isAdmin(companyId)    { return myRole(companyId) == 'administrador'; }
+    function canEdit(companyId)    { return myRole(companyId) in ['administrador', 'evaluador']; }
+    function isAuthenticated()     { return request.auth != null; }
+
+    // ─── companies ───────────────────────────────────────────────────────
+    match /companies/{companyId} {
+      allow read:   if isAuthenticated() && isMember(companyId);
+      allow create: if isAuthenticated() && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isAuthenticated() && isAdmin(companyId);
+      allow delete: if isAuthenticated() && isAdmin(companyId);
+    }
+
+    // ─── memberships ─────────────────────────────────────────────────────
+    // Clave compuesta: {uid}_{companyId}
+    match /memberships/{membershipId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.userId == request.auth.uid ||
+         isAdmin(resource.data.companyId));
+      allow create: if isAuthenticated() &&
+        (request.resource.data.userId == request.auth.uid ||
+         isAdmin(request.resource.data.companyId));
+      allow delete: if isAuthenticated() && isAdmin(resource.data.companyId);
+    }
+
+    // ─── evaluations ─────────────────────────────────────────────────────
+    match /evaluations/{evaluationId} {
+      allow read:   if isAuthenticated() && isMember(resource.data.companyId);
+      allow create: if isAuthenticated() &&
+        isMember(request.resource.data.companyId) &&
+        canEdit(request.resource.data.companyId);
+      allow update: if isAuthenticated() &&
+        isMember(resource.data.companyId) &&
+        canEdit(resource.data.companyId);
+      allow delete: if isAuthenticated() && isAdmin(resource.data.companyId);
+
+      // ─── answers (subcolección) ───────────────────────────────────────
+      match /answers/{answerId} {
+        allow read: if isAuthenticated() &&
+          isMember(get(/databases/$(database)/documents/evaluations/$(evaluationId)).data.companyId);
+        allow write: if isAuthenticated() &&
+          canEdit(get(/databases/$(database)/documents/evaluations/$(evaluationId)).data.companyId);
+      }
+
+      // ─── recommendations (subcolección) ──────────────────────────────
+      match /recommendations/{recId} {
+        allow read: if isAuthenticated() &&
+          isMember(get(/databases/$(database)/documents/evaluations/$(evaluationId)).data.companyId);
+        allow write: if isAuthenticated() &&
+          isMember(get(/databases/$(database)/documents/evaluations/$(evaluationId)).data.companyId);
+      }
+    }
+  }
+}

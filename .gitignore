@@ -1,0 +1,44 @@
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Build de Next.js
+.next/
+out/
+build/
+
+# Variables de entorno — NUNCA subir al repo
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Firebase Admin key (si la guardas como archivo)
+*-firebase-adminsdk-*.json
+serviceAccountKey.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Claude
+.claude/
+
+# Carpetas ajenas al proyecto
+OpenWA-main/
+
+# Scripts de credenciales
+FIREBASE_CREDENCIALES.md
+fix_and_start.bat
+tsconfig.tsbuildinfo

@@ -1,0 +1,121 @@
+{
+  "version": "1.0",
+  "law": "Ley 1581 de 2012 (Colombia) — fase de diseño",
+  "totalMax": 100,
+  "blocks": [
+    { "id": "A", "name": "Política de datos personales", "max": 40 },
+    { "id": "B", "name": "Privacidad desde el diseño", "max": 36 },
+    { "id": "C", "name": "Gobernanza", "max": 24 }
+  ],
+  "questions": [
+    {
+      "id": 1,
+      "block": "A",
+      "text": "¿Cuenta con una política de tratamiento de datos personales?",
+      "weight": 0,
+      "role": "parent",
+      "children": [2, 3, 4, 5],
+      "inheritsChildrenWeight": true,
+      "scored": false,
+      "fallbackExplain": "Pregunta si la empresa tiene una política que regule cómo recoge, usa y protege los datos personales. Es la base de todo cumplimiento de la Ley 1581."
+    },
+    {
+      "id": 2,
+      "block": "A",
+      "text": "¿La política está documentada y publicada en medio de fácil acceso?",
+      "weight": 10,
+      "role": "child",
+      "parent": 1,
+      "scored": true,
+      "fallbackExplain": "No basta con tener la política: debe estar escrita y disponible para que los titulares la consulten fácilmente."
+    },
+    {
+      "id": 3,
+      "block": "A",
+      "text": "¿Define las finalidades del tratamiento de datos?",
+      "weight": 10,
+      "role": "child",
+      "parent": 1,
+      "scored": true,
+      "fallbackExplain": "La ley exige decir para qué se usan los datos. Las finalidades deben ser claras y legítimas."
+    },
+    {
+      "id": 4,
+      "block": "A",
+      "text": "¿Incluye los derechos de los titulares?",
+      "weight": 10,
+      "role": "child",
+      "parent": 1,
+      "scored": true,
+      "fallbackExplain": "La política debe informar a las personas sus derechos: conocer, actualizar, rectificar y suprimir sus datos, entre otros."
+    },
+    {
+      "id": 5,
+      "block": "A",
+      "text": "¿Menciona cómo ejercer los derechos de los titulares?",
+      "weight": 10,
+      "role": "child",
+      "parent": 1,
+      "scored": true,
+      "fallbackExplain": "Además de listar los derechos, hay que decir el canal y el procedimiento para ejercerlos (a quién escribir, cómo, en qué tiempo)."
+    },
+    {
+      "id": 6,
+      "block": "B",
+      "text": "¿Incorpora evaluaciones de impacto (Privacy Impact Assessments)?",
+      "weight": 12,
+      "role": "standalone",
+      "scored": true,
+      "fallbackExplain": "Antes de operar, evaluar los riesgos de privacidad de un nuevo producto o proceso. Es privacidad desde el diseño en acción."
+    },
+    {
+      "id": 7,
+      "block": "B",
+      "text": "¿Aplica técnicas de minimización de datos?",
+      "weight": 12,
+      "role": "standalone",
+      "scored": true,
+      "fallbackExplain": "Recoger solo los datos estrictamente necesarios para la finalidad, ni uno más."
+    },
+    {
+      "id": 8,
+      "block": "B",
+      "text": "¿Configura sus sistemas para recopilar el mínimo de datos por defecto?",
+      "weight": 12,
+      "role": "standalone",
+      "scored": true,
+      "fallbackExplain": "Que la opción por defecto en los sistemas sea recoger lo mínimo (privacidad por defecto), no lo máximo."
+    },
+    {
+      "id": 9,
+      "block": "C",
+      "text": "¿Cuenta con un sistema de administración de riesgos?",
+      "weight": 16,
+      "role": "standalone",
+      "scored": true,
+      "fallbackExplain": "Un proceso para identificar, evaluar y mitigar riesgos sobre los datos personales de forma continua."
+    },
+    {
+      "id": 10,
+      "block": "C",
+      "text": "¿Cuenta con un oficial de protección de datos personales?",
+      "weight": 8,
+      "role": "parent",
+      "children": [11],
+      "inheritsChildrenWeight": false,
+      "scored": true,
+      "fallbackExplain": "Una persona responsable de velar por el cumplimiento de la protección de datos dentro de la organización."
+    },
+    {
+      "id": 11,
+      "block": "C",
+      "text": "¿Está designado formalmente?",
+      "weight": 0,
+      "role": "complementary",
+      "parent": 10,
+      "scored": false,
+      "complementary": true,
+      "fallbackExplain": "Pregunta complementaria: confirma si el oficial fue nombrado de manera formal. No suma al puntaje, pero sí matiza el diagnóstico."
+    }
+  ]
+}
