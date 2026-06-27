@@ -499,16 +499,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true, ignored: true });
     }
 
-    // Ignorar TODOS los mensajes propios para evitar loops del bot
-    if (data.fromMe) {
-      return NextResponse.json({ ok: true, ignored: true, reason: 'fromMe' });
+    // Evitar loops: ignorar mensajes propios SI contienen la firma del bot
+    // Esto permite que el admin se envíe comandos a sí mismo para probar
+    const body = (data.body || data.text || data.content || '').toString().trim();
+    if (data.fromMe && body.includes('_PrivacyCheck CO')) {
+      return NextResponse.json({ ok: true, ignored: true, reason: 'bot_reply_loop' });
     }
 
     const fromJid = (data.from || data.chatId || data.author || '').toString();
     if (!fromJid) return NextResponse.json({ ok: true, ignored: true });
 
     const senderPhone = fromJid.split('@')[0];
-    const body = (data.body || data.text || data.content || '').toString().trim();
     if (!body) return NextResponse.json({ ok: true, ignored: true });
 
     const cmd = body.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // normalizar acentos
