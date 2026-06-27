@@ -14,7 +14,9 @@ export async function POST(request: Request) {
     const displayName  = ((decoded as any).name ?? email.split('@')[0] ?? '').trim();
     const photoURL     = (decoded as any).picture ?? '';
     const signInProvider = (decoded as any).firebase?.sign_in_provider ?? '';
-    const provider     = signInProvider.includes('microsoft') ? 'microsoft' : 'google';
+    const provider     = signInProvider.includes('microsoft') ? 'microsoft'
+                       : signInProvider.includes('password')  ? 'email'
+                       : 'google';
 
     // 2. Crear session cookie
     const sessionCookie = await createSessionCookie(idToken);
