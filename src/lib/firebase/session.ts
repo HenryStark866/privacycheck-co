@@ -20,7 +20,7 @@ export async function verifySession(): Promise<{ uid: string; email?: string } |
     const cookieStore = cookies();
     const sessionCookie = cookieStore.get(SESSION_COOKIE)?.value;
     if (!sessionCookie) return null;
-    const decoded = await adminAuth.verifySessionCookie(sessionCookie, true);
+    const decoded = await adminAuth.verifySessionCookie(sessionCookie, false);
     return { uid: decoded.uid, email: decoded.email };
   } catch {
     return null;

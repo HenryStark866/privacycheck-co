@@ -3,6 +3,7 @@ import './globals.css';
 import SplashScreen from '@/components/SplashScreen';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://privacycheck-co.vercel.app'),
   title: 'PrivacyCheck CO · Autodiagnóstico Ley 1581',
   description: 'Evalúa el cumplimiento de tu organización con la Ley 1581 de 2012. Herramienta gratuita con IA para PYMES colombianas. Desarrollado para CAVALTEC · Sintaxis TI.',
   icons: {

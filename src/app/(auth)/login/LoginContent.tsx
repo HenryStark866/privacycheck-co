@@ -7,13 +7,12 @@ import {
   signInWithRedirect,
   getRedirectResult,
 } from 'firebase/auth';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Lock, BarChart2, Lightbulb, CheckCircle, Shield } from 'lucide-react';
+import { Lock, CheckCircle, Shield, BarChart2, Lightbulb } from 'lucide-react';
 
 export default function LoginContent() {
-  const router = useRouter();
   const params = useSearchParams();
   const [loading, setLoading] = useState<string | null>('processing');
   const [error, setError] = useState('');
@@ -21,21 +20,33 @@ export default function LoginContent() {
   useEffect(() => {
     getRedirectResult(auth)
       .then(async (result) => {
-        if (!result) return;
-        const idToken = await result.user.getIdToken();
+        if (!result) return; // no hay redirect pendiente, mostrar botones
+
+        // Obtener ID token con force-refresh para garantizar validez
+        const idToken = await result.user.getIdToken(true);
+
         const res = await fetch('/api/auth/session', {
-          method: 'POST',
+          method:  'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken }),
+          body:    JSON.stringify({ idToken }),
         });
-        if (!res.ok) throw new Error('Error al iniciar sesión');
-        const next = params.get('next') ?? '/dashboard';
-        router.push(next);
-        router.refresh();
+
+        if (!res.ok) {
+          const d = await res.json().catch(() => ({}));
+          throw new Error(d.error || `Error HTTP ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        // Hard navigation → el servidor lee la cookie nueva en la primera petición
+        window.location.href = data.needsOnboarding
+          ? '/onboarding'
+          : (params.get('next') ?? '/dashboard');
       })
       .catch((err: any) => {
         const msg: string = err?.message ?? '';
-        if (!msg.includes('no-redirect-user') && !msg.includes('No redirect')) {
+        const ignored = ['no-redirect-user', 'No redirect', 'null user'];
+        if (!ignored.some(s => msg.includes(s))) {
           setError(msg || 'Error al iniciar sesión. Intenta de nuevo.');
         }
       })
@@ -63,77 +74,76 @@ export default function LoginContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-navy-900 bg-grid-pattern relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-slate-50 bg-grid-pattern relative overflow-hidden">
       {/* Background Orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] rounded-full opacity-20 blur-[100px] bg-brand-500 animate-pulse-slow" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-10 blur-[120px] bg-indigo-500 animate-float" />
-        <div className="absolute top-[40%] left-[20%] w-[300px] h-[300px] rounded-full opacity-10 blur-[80px] bg-teal-400" />
+        <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] rounded-full opacity-10 blur-[100px] bg-brand-500 animate-pulse-slow" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-5 blur-[120px] bg-blue-500 animate-float" />
       </div>
 
       <header className="relative z-10 flex items-center gap-3 px-8 py-6">
-        <div className="flex items-center justify-center w-9 h-9 rounded-xl overflow-hidden glass-card shadow-sm border border-white/10">
+        <div className="flex items-center justify-center w-9 h-9 rounded-xl overflow-hidden bg-white shadow-sm border border-slate-200">
           <Image src="/icon-cavaltec.png" alt="Logo" width={36} height={36} className="w-7 h-7 object-contain" />
         </div>
-        <span className="text-white font-semibold text-sm tracking-widest uppercase">PrivacyCheck CO</span>
-        <span className="text-[10px] text-brand-300 border border-brand-500/30 rounded-full px-2.5 py-0.5 ml-1 bg-brand-900/40 backdrop-blur tracking-widest uppercase">Beta</span>
+        <span className="text-slate-800 font-semibold text-sm tracking-widest uppercase">PrivacyCheck CO</span>
+        <span className="text-[10px] text-brand-600 border border-brand-200 rounded-full px-2.5 py-0.5 ml-1 bg-brand-50 backdrop-blur tracking-widest uppercase font-medium">Beta</span>
       </header>
 
       <main className="relative z-10 flex-1 flex items-center justify-center px-4 pb-8">
         <div className="w-full max-w-[440px]">
           <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 bg-brand-900/30 border border-brand-500/20 backdrop-blur rounded-full px-4 py-1.5 mb-6 shadow-[0_0_15px_rgba(20,184,166,0.15)]">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-400" style={{ animation: 'pulse 2s infinite' }} />
-              <span className="text-[11px] text-brand-300 font-medium tracking-widest uppercase">Fase de Diseño · Ley 1581 de 2012</span>
+            <div className="inline-flex items-center gap-2 bg-white border border-slate-200 shadow-sm rounded-full px-4 py-1.5 mb-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-500" style={{ animation: 'pulse 2s infinite' }} />
+              <span className="text-[11px] text-slate-600 font-medium tracking-widest uppercase">Fase de Diseño · Ley 1581 de 2012</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white leading-tight tracking-tight mb-4 text-glow">
+            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 leading-tight tracking-tight mb-4 text-glow">
               Autodiagnóstico de<br />Protección de Datos
             </h1>
-            <p className="text-slate-400 text-sm md:text-base leading-relaxed font-light">
+            <p className="text-slate-500 text-sm md:text-base leading-relaxed font-light">
               Evalúe el cumplimiento de su organización con la Ley 1581
               e identifique brechas en minutos con IA.
             </p>
           </div>
 
-          <div className="glass-card rounded-[2rem] p-8 shadow-floating">
+          <div className="bg-white/90 backdrop-blur-sm rounded-[2rem] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.08)] border border-slate-200/80">
             <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-800/50 border border-white/10 mb-5 overflow-hidden shadow-inner">
-                <Image src="/icon-cavaltec.png" alt="Logo" width={48} height={48} className="w-10 h-10 object-contain drop-shadow-md" />
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100 mb-5 overflow-hidden shadow-sm">
+                <Image src="/icon-cavaltec.png" alt="Logo" width={48} height={48} className="w-10 h-10 object-contain" />
               </div>
-              <h2 className="text-2xl font-semibold text-white tracking-tight">Iniciar sesión</h2>
-              <p className="text-sm text-slate-400 mt-2 font-light">Acceso seguro a la plataforma</p>
+              <h2 className="text-2xl font-semibold text-slate-900 tracking-tight">Iniciar sesión</h2>
+              <p className="text-sm text-slate-500 mt-2 font-light">Acceso seguro a la plataforma</p>
             </div>
 
             <div className="space-y-4">
               <button
                 onClick={() => signIn('google')}
                 disabled={!!loading}
-                className="w-full flex items-center justify-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm font-medium text-slate-200 hover:bg-white/10 hover:border-brand-500/50 hover:text-white hover:shadow-glow active:scale-[0.98] transition-all duration-300 disabled:opacity-50 group"
+                className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 shadow-sm rounded-xl px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-brand-300 hover:text-slate-900 active:scale-[0.98] transition-all duration-300 disabled:opacity-50 group"
               >
-                {loading === 'google' || loading === 'processing' ? <Spinner /> : <GoogleIcon className="group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all" />}
+                {loading === 'google' || loading === 'processing' ? <Spinner /> : <GoogleIcon />}
                 {loading === 'processing' ? 'Verificando red segura...' : 'Autenticar con Google'}
               </button>
 
               <button
                 onClick={() => signIn('microsoft')}
                 disabled={!!loading}
-                className="w-full flex items-center justify-center gap-3 bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm font-medium text-slate-200 hover:bg-white/10 hover:border-brand-500/50 hover:text-white hover:shadow-glow active:scale-[0.98] transition-all duration-300 disabled:opacity-50 group"
+                className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 shadow-sm rounded-xl px-4 py-3.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-brand-300 hover:text-slate-900 active:scale-[0.98] transition-all duration-300 disabled:opacity-50 group"
               >
-                {loading === 'microsoft' ? <Spinner /> : <MicrosoftIcon className="group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all" />}
+                {loading === 'microsoft' ? <Spinner /> : <MicrosoftIcon />}
                 Autenticar con Microsoft
               </button>
             </div>
 
             {error && (
-              <p className="mt-5 text-sm text-red-400 bg-red-950/40 border border-red-500/20 backdrop-blur rounded-xl px-4 py-3 text-center">
+              <p className="mt-5 text-sm text-red-600 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-center">
                 {error}
               </p>
             )}
 
             <div className="flex items-center gap-4 my-8">
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
-              <span className="text-[10px] text-slate-500 uppercase tracking-widest font-medium">Protocolos</span>
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+              <span className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">Protocolos</span>
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
             </div>
 
             <div className="flex items-center justify-center gap-5">
@@ -149,8 +159,8 @@ export default function LoginContent() {
               { icon: <BarChart2 className="w-3.5 h-3.5" />, label: 'Data Diagnostics' },
               { icon: <Lightbulb className="w-3.5 h-3.5" />, label: 'IA Neural Engine' },
             ].map((f) => (
-              <div key={f.label} className="flex items-center gap-2 px-3.5 py-2 rounded-full text-slate-300 text-[11px] uppercase tracking-wider font-medium glass-card border border-white/5 hover:border-brand-500/30 transition-colors">
-                <span className="text-brand-400 drop-shadow-[0_0_5px_rgba(45,212,191,0.5)]">{f.icon}</span>
+              <div key={f.label} className="flex items-center gap-2 px-3.5 py-2 rounded-full text-slate-600 bg-white shadow-sm border border-slate-200 text-[11px] uppercase tracking-wider font-medium">
+                <span className="text-brand-500">{f.icon}</span>
                 {f.label}
               </div>
             ))}
@@ -160,10 +170,10 @@ export default function LoginContent() {
 
       <footer className="relative z-10 pb-8 pt-4">
         <div className="flex flex-col items-center gap-4">
-          <p className="text-slate-500 text-[11px] tracking-widest uppercase font-medium">© 2026 PrivacyCheck CO · Core System</p>
-          <div className="flex items-center gap-3 opacity-40 hover:opacity-100 transition-opacity duration-300">
+          <p className="text-slate-400 text-[11px] tracking-widest uppercase font-medium">© 2026 PrivacyCheck CO · Core System</p>
+          <div className="flex items-center gap-3 opacity-60 hover:opacity-100 transition-opacity duration-300">
             <span className="text-slate-400 text-[9px] uppercase tracking-[0.2em] font-bold">Powered by</span>
-            <Image src="/logo-cavaltec.jpeg" alt="Sintaxis TI" width={72} height={72} className="h-6 w-auto brightness-200 contrast-150" />
+            <Image src="/logo-cavaltec.jpeg" alt="Sintaxis TI" width={72} height={72} className="h-6 w-auto grayscale mix-blend-multiply opacity-80" />
           </div>
         </div>
       </footer>
@@ -173,8 +183,8 @@ export default function LoginContent() {
 
 function TrustBadge({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <div className="flex flex-col items-center gap-1.5 text-slate-400 text-[10px] uppercase tracking-wider font-medium">
-      <span className="text-brand-400">{icon}</span>
+    <div className="flex flex-col items-center gap-1.5 text-slate-500 text-[10px] uppercase tracking-wider font-medium">
+      <span className="text-brand-500">{icon}</span>
       {label}
     </div>
   );

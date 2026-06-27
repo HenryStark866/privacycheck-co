@@ -46,6 +46,10 @@ subir_github.bat
 limpiar_proyecto.bat
 run_vercel_deploy.bat
 vercel_deploy_api.ps1
+configurar_env_vercel.bat
+push_*.bat
+set_env_vercel*.ps1
+set_env_vercel*.bat
 tsconfig.tsbuildinfo
 
 # PDFs y assets de referencia

@@ -1,226 +1,249 @@
+/**
+ * POST /api/whatsapp/webhook
+ *
+ * Recibe eventos de OpenWA y responde mensajes de WhatsApp.
+ *
+ * Flujo:
+ *  1. Recibe evento message.received
+ *  2. Busca al remitente en la colección users por su número de WhatsApp
+ *  3. Si es admin global → contexto con TODAS las empresas
+ *     Si es usuario registrado → contexto con SUS empresas solamente
+ *     Si no está registrado → mensaje de acceso denegado con instrucciones
+ *  4. Comandos rápidos (ayuda, empresas, empresa X)
+ *  5. Consulta libre → Gemini con contexto de Firestore
+ */
 import { NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase/admin';
-import { sendWhatsAppMessage } from '@/lib/whatsapp';
+import {
+  sendWhatsAppMessage,
+  findUserByPhone,
+  normalizePhone,
+} from '@/lib/whatsapp';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-// Instrucción del sistema para el bot de WhatsApp
-const WHATSAPP_SYSTEM_INSTRUCTION = `Eres el asistente oficial de WhatsApp para PrivacyCheck CO, un sistema experto en la Ley 1581 de 2012 (protección de datos personales en Colombia) y diagnóstico de Privacy by Design.
-Tu rol es responder a las consultas del administrador sobre el estado de sus empresas registradas y dar asesoramiento legal/técnico rápido.
+const BOT_PERSONA = `Eres el asistente oficial de WhatsApp de *PrivacyCheck CO*, experto en la Ley 1581 de 2012 (protección de datos personales en Colombia) y Privacy by Design.
+Responde en español colombiano claro, directo y profesional. Usa viñetas (*•*) y negritas (*texto*) para facilitar la lectura en celulares. Sé conciso. Si mencionas artículos de la ley, cítalos correctamente. No inventes datos.`;
 
-Habla en español colombiano claro, directo y profesional. Usa viñetas y negritas para facilitar la lectura en celulares. Sé conciso y estructurado.`;
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/**
- * Limpia y normaliza un número de teléfono para comparación (deja solo dígitos)
- */
-function sanitizePhone(phone: string): string {
-  return phone.replace(/\D/g, '');
+async function getAdminNumberFromDB(): Promise<string | null> {
+  try {
+    const doc = await adminDb.collection('settings').doc('whatsapp').get();
+    return doc.exists ? (doc.data()?.adminNumber ?? null) : null;
+  } catch { return null; }
 }
 
-/**
- * Consulta la API de Gemini para obtener respuestas del bot
- */
-async function getGeminiReply(userMessage: string, context: string): Promise<string> {
-  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'PEGAR_CLAVE_GEMINI_AQUI') {
-    return '⚠️ El servicio de Inteligencia Artificial (Gemini) no está configurado en el servidor principal.';
-  }
+async function isAdminNumber(senderPhone: string): Promise<boolean> {
+  const candidates: (string | null | undefined)[] = [
+    process.env.ADMIN_WHATSAPP_NUMBER,
+    await getAdminNumberFromDB(),
+  ];
+  const s = normalizePhone(senderPhone).slice(-10);
+  return candidates.some((n) => n && normalizePhone(n).slice(-10) === s);
+}
 
-  const prompt = `Contexto del sistema (Estado de empresas y evaluaciones en la app):\n${context}\n\nPregunta del Administrador:\n"${userMessage}"`;
+async function geminiReply(prompt: string, context: string): Promise<string> {
+  if (!GEMINI_API_KEY) return '⚠️ La IA no está configurada en el servidor.';
 
   const body = {
-    system_instruction: { parts: [{ text: WHATSAPP_SYSTEM_INSTRUCTION }] },
-    contents: [{ role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: {
-      maxOutputTokens: 1024,
-      temperature: 0.5,
-    },
+    system_instruction: { parts: [{ text: BOT_PERSONA }] },
+    contents: [{
+      role: 'user',
+      parts: [{ text: `Contexto de la base de datos:\n${context}\n\nConsulta del usuario:\n"${prompt}"` }],
+    }],
+    generationConfig: { maxOutputTokens: 1024, temperature: 0.4 },
   };
 
   try {
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      }
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
     );
-
-    if (!res.ok) {
-      console.error('Gemini webhook error status:', res.status);
-      return 'Disculpa, ocurrió un error temporal al conectar con mi cerebro de IA. Por favor intenta en un momento.';
-    }
-
-    const data = await res.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? 'No pude generar una respuesta.';
-  } catch (err) {
-    console.error('Failed to contact Gemini in webhook:', err);
-    return 'Error de conexión con la IA de diagnóstico.';
+    if (!res.ok) return 'Tuve un problema temporal con la IA. Intenta de nuevo en un momento.';
+    const d = await res.json();
+    return d?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ?? 'Sin respuesta de la IA.';
+  } catch {
+    return 'Error de conexión con el motor de IA.';
   }
 }
+
+async function buildContext(companyIds?: string[]): Promise<string> {
+  const compsSnap = await adminDb.collection('companies').get();
+  const companies = companyIds
+    ? compsSnap.docs.filter((d) => companyIds.includes(d.id))
+    : compsSnap.docs;
+
+  if (companies.length === 0) return 'No hay empresas registradas para este usuario.';
+
+  const evalsSnap = await adminDb.collection('evaluations').get();
+  const evals     = evalsSnap.docs.map((d) => ({ id: d.id, ...d.data() } as any));
+
+  return companies.map((doc) => {
+    const c    = doc.data();
+    const done = evals.filter((e) => e.companyId === doc.id && e.status === 'completada');
+    const latestScore = done.length > 0
+      ? `${done.sort((a: any, b: any) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0))[0].score}%`
+      : 'sin diagnóstico completado';
+    return `• ${c.name} (NIT: ${c.nit ?? 'N/A'}, Sector: ${c.sector ?? 'N/A'}) → ${latestScore}`;
+  }).join('\n');
+}
+
+// ─── Comandos ────────────────────────────────────────────────────────────────
+
+async function cmdEmpresas(sessionId: string, chatId: string, companyIds?: string[]) {
+  const compsSnap = await adminDb.collection('companies').get();
+  const list = companyIds
+    ? compsSnap.docs.filter((d) => companyIds.includes(d.id))
+    : compsSnap.docs;
+
+  if (list.length === 0) {
+    await sendWhatsAppMessage(sessionId, chatId, '🏢 No tienes empresas registradas aún. Créalas en la app web.');
+    return;
+  }
+
+  const evalsSnap = await adminDb.collection('evaluations').get();
+  const evals     = evalsSnap.docs.map((d) => ({ id: d.id, ...d.data() } as any));
+
+  let msg = `🏢 *Empresas registradas (${list.length}):*\n\n`;
+  list.forEach((doc, i) => {
+    const c    = doc.data();
+    const done = evals.filter((e) => e.companyId === doc.id && e.status === 'completada');
+    const pct  = done.length > 0
+      ? `*${Math.round(done.reduce((s: number, e: any) => s + (e.score ?? 0), 0) / done.length)}%*`
+      : 'Sin diagnóstico';
+    msg += `${i + 1}. *${c.name}* — ${pct}\n   NIT: ${c.nit ?? 'N/A'}\n\n`;
+  });
+  msg += `Escribe *empresa [nombre]* para ver el detalle.`;
+  await sendWhatsAppMessage(sessionId, chatId, msg);
+}
+
+async function cmdEmpresaDetalle(sessionId: string, chatId: string, query: string, companyIds?: string[]) {
+  const compsSnap = await adminDb.collection('companies').get();
+  const pool = companyIds
+    ? compsSnap.docs.filter((d) => companyIds.includes(d.id))
+    : compsSnap.docs;
+
+  const match = pool.find((d) =>
+    (d.data().name ?? '').toLowerCase().includes(query.toLowerCase())
+  );
+
+  if (!match) {
+    await sendWhatsAppMessage(sessionId, chatId,
+      `❌ No encontré empresa con "${query}". Escribe *empresas* para ver la lista.`);
+    return;
+  }
+
+  const c      = match.data();
+  const evSnap = await adminDb.collection('evaluations').where('companyId', '==', match.id).get();
+
+  let msg = `🏢 *${c.name}*\n• NIT: ${c.nit ?? 'N/A'}\n• Sector: ${c.sector ?? 'N/A'}\n• Tamaño: ${c.size ?? 'N/A'}\n\n`;
+
+  if (evSnap.empty) {
+    msg += 'Sin diagnósticos registrados.';
+  } else {
+    msg += `*Diagnósticos (${evSnap.size}):*\n`;
+    evSnap.docs
+      .sort((a, b) => (b.data().createdAt?.seconds ?? 0) - (a.data().createdAt?.seconds ?? 0))
+      .forEach((d) => {
+        const ev    = d.data();
+        const fecha = ev.createdAt
+          ? new Date((ev.createdAt.seconds ?? 0) * 1000).toLocaleDateString('es-CO')
+          : 'N/A';
+        msg += `• [${(ev.status as string).toUpperCase()}] ${fecha}`;
+        if (ev.status === 'completada') msg += ` → *${ev.score}%* (${ev.maturity ?? 'N/A'})`;
+        msg += '\n';
+      });
+  }
+  await sendWhatsAppMessage(sessionId, chatId, msg);
+}
+
+// ─── Handler principal ───────────────────────────────────────────────────────
 
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
-    console.log('Recibida petición de webhook de WhatsApp:', payload.event);
-
     const { event, sessionId, data } = payload;
 
-    // Solo procesamos mensajes de chat entrantes
-    if (event !== 'message.received' || !data || data.type !== 'chat' || data.isGroup) {
+    // Solo mensajes de texto individuales (no grupos, no propios)
+    if (
+      event !== 'message.received' ||
+      !data ||
+      data.type !== 'chat' ||
+      data.isGroup ||
+      data.fromMe
+    ) {
       return NextResponse.json({ ok: true, ignored: true });
     }
 
-    const fromJid = data.from; // Ej. "573001234567@c.us"
-    const senderNumber = fromJid.split('@')[0];
-    const messageBody = (data.body || '').trim();
+    const fromJid     = data.from as string;   // "573001234567@c.us"
+    const senderPhone = fromJid.split('@')[0];  // "573001234567"
+    const body        = (data.body ?? '').trim();
+    const cmd         = body.toLowerCase();
 
-    // 1. Validar autorización del administrador
-    // Traer número autorizado desde Firestore
-    const settingsDoc = await adminDb.collection('settings').doc('whatsapp').get();
-    const dbAdminNumber = settingsDoc.exists ? settingsDoc.data()?.adminNumber : null;
-    const envAdminNumber = process.env.ADMIN_WHATSAPP_NUMBER;
+    // ── 1. Identificar al remitente ──────────────────────────────────────────
+    const isAdmin  = await isAdminNumber(senderPhone);
+    const regUser  = isAdmin ? null : await findUserByPhone(senderPhone);
 
-    const authorizedRaw = dbAdminNumber || envAdminNumber;
-
-    if (!authorizedRaw) {
-      // Si no hay ningún número configurado, permitimos el paso temporalmente para facilitar el demo
-      console.warn('Alerta: No hay número de administrador configurado en Firestore ni en .env.local');
-    } else {
-      const senderSanitized = sanitizePhone(senderNumber);
-      const authorizedSanitized = sanitizePhone(String(authorizedRaw));
-
-      // Comparación flexible por si falta o sobra el código de país
-      const isMatch = senderSanitized.endsWith(authorizedSanitized) || authorizedSanitized.endsWith(senderSanitized);
-
-      if (!isMatch) {
-        console.warn(`Acceso denegado a número no autorizado: ${senderNumber}`);
-        await sendWhatsAppMessage(
-          sessionId,
-          fromJid,
-          `🔒 *Acceso Denegado*\n\nTu número (*${senderNumber}*) no está registrado como administrador en PrivacyCheck CO. Por favor, configúralo en el panel de la aplicación.`
-        );
-        return NextResponse.json({ ok: true, status: 'unauthorized_ignored' });
-      }
-    }
-
-    // 2. Procesar comandos rápidos
-    const command = messageBody.toLowerCase();
-
-    if (command === 'ayuda' || command === 'help') {
-      const helpText = `💡 *PrivacyCheck CO — Comandos de WhatsApp*\n\nPuedes chatear conmigo en lenguaje natural sobre Ley 1581 o sobre tus empresas y evaluaciones. O usa estos comandos rápidos:\n\n• *empresas*: Lista las organizaciones registradas y su cumplimiento.\n• *empresa [nombre]*: Detalle de los diagnósticos de una empresa específica.\n• *ayuda*: Muestra este menú de ayuda.`;
-      await sendWhatsAppMessage(sessionId, fromJid, helpText);
-      return NextResponse.json({ ok: true, status: 'command_help' });
-    }
-
-    if (command === 'empresas') {
-      const compsSnap = await adminDb.collection('companies').get();
-      if (compsSnap.empty) {
-        await sendWhatsAppMessage(sessionId, fromJid, '🏢 No hay empresas registradas en el sistema todavía.');
-        return NextResponse.json({ ok: true });
-      }
-
-      const evalsSnap = await adminDb.collection('evaluations').get();
-      const evaluations = evalsSnap.docs.map((d) => d.data());
-
-      let responseText = `🏢 *Empresas Registradas (${compsSnap.size}):*\n\n`;
-      compsSnap.docs.forEach((doc, idx) => {
-        const comp = doc.data();
-        const compEvals = evaluations.filter((e) => e.companyId === doc.id);
-        const completed = compEvals.filter((e) => e.status === 'completada');
-        
-        let scoreText = 'Sin diagnósticos completados';
-        if (completed.length > 0) {
-          const avg = Math.round(completed.reduce((acc, ev) => acc + (ev.score || 0), 0) / completed.length);
-          scoreText = `Promedio: *${avg}%* (${completed.length} completado/s)`;
-        }
-
-        responseText += `*${idx + 1}. ${comp.name}*\n• NIT: ${comp.nit || 'Sin registrar'}\n• Estado: ${scoreText}\n\n`;
-      });
-
-      await sendWhatsAppMessage(sessionId, fromJid, responseText);
-      return NextResponse.json({ ok: true, status: 'command_companies' });
-    }
-
-    if (command.startsWith('empresa ')) {
-      const queryName = command.replace('empresa ', '').trim();
-      const compsSnap = await adminDb.collection('companies').get();
-      
-      const matchedDocs = compsSnap.docs.filter((d) => 
-        (d.data().name || '').toLowerCase().includes(queryName)
+    if (!isAdmin && !regUser) {
+      await sendWhatsAppMessage(
+        sessionId, fromJid,
+        `🔒 *Acceso no autorizado*\n\nTu número no está vinculado a ninguna cuenta de PrivacyCheck CO.\n\n` +
+        `Ingresa a *privacycheck-co.vercel.app*, crea tu cuenta con Google o Microsoft y vincula este número en el proceso de registro.`
       );
+      return NextResponse.json({ ok: true, status: 'unauthorized' });
+    }
 
-      if (matchedDocs.length === 0) {
-        await sendWhatsAppMessage(sessionId, fromJid, `❌ No encontré ninguna empresa que coincida con "${queryName}". Escribe *empresas* para ver la lista.`);
-        return NextResponse.json({ ok: true });
-      }
-
-      const company = matchedDocs[0].data();
-      const companyId = matchedDocs[0].id;
-
-      const evalsSnap = await adminDb.collection('evaluations')
-        .where('companyId', '==', companyId)
+    // IDs de empresas (undefined = todas → solo admin)
+    let companyIds: string[] | undefined;
+    if (!isAdmin && regUser) {
+      const memSnap = await adminDb.collection('memberships')
+        .where('userId', '==', regUser.uid)
         .get();
-
-      let reply = `🏢 *Detalle de Empresa: ${company.name}*\n`;
-      reply += `• NIT: ${company.nit || 'N/A'}\n`;
-      reply += `• Sector: ${company.sector || 'N/A'}\n`;
-      reply += `• Tamaño: ${company.size || 'N/A'}\n\n`;
-
-      if (evalsSnap.empty) {
-        reply += `Esta empresa no tiene diagnósticos creados.`;
-      } else {
-        reply += `*Diagnósticos registrados (${evalsSnap.size}):*\n`;
-        evalsSnap.docs.forEach((doc) => {
-          const ev = doc.data();
-          const dateStr = ev.createdAt ? new Date((ev.createdAt.seconds || ev.createdAt._seconds || 0) * 1000).toLocaleDateString() : 'N/A';
-          reply += `- [${ev.status.toUpperCase()}] Fecha: ${dateStr}`;
-          if (ev.status === 'completada') {
-            reply += ` | Puntaje: *${ev.score}%* (${ev.maturity || 'N/A'})`;
-          }
-          reply += '\n';
-        });
-      }
-
-      await sendWhatsAppMessage(sessionId, fromJid, reply);
-      return NextResponse.json({ ok: true, status: 'command_company_detail' });
+      companyIds = memSnap.docs.map((d) => d.data().companyId as string);
     }
 
-    // 3. Consulta de IA Inteligente (Gemini) con contexto de base de datos
-    const compsSnap = await adminDb.collection('companies').get();
-    const evalsSnap = await adminDb.collection('evaluations').get();
+    const greeting = isAdmin ? 'Administrador' : (regUser?.displayName?.split(' ')[0] ?? 'Usuario');
 
-    const evaluations = evalsSnap.docs.map((d) => ({ id: d.id, ...d.data() } as any));
+    // ── 2. Comandos rápidos ──────────────────────────────────────────────────
 
-    // Crear un resumen de la base de datos para pasar como contexto
-    let dbSummaryContext = 'Base de datos actual de empresas y su estado de cumplimiento:\n';
-    if (compsSnap.empty) {
-      dbSummaryContext += '- No hay empresas registradas en el sistema.';
-    } else {
-      compsSnap.docs.forEach((doc) => {
-        const comp = doc.data();
-        const compEvals = evaluations.filter((e: any) => e.companyId === doc.id);
-        const compCompleted = compEvals.filter((e: any) => e.status === 'completada');
-
-        dbSummaryContext += `- Empresa: ${comp.name} (NIT: ${comp.nit || 'N/A'}, Sector: ${comp.sector || 'N/A'}). `;
-        if (compCompleted.length > 0) {
-          const latest = compCompleted.sort((a: any, b: any) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))[0];
-          dbSummaryContext += `Último diagnóstico: ${latest.score}% (${latest.maturity || 'N/A'}), completado el ${latest.completedAt ? new Date(latest.completedAt.seconds * 1000).toLocaleDateString() : 'N/A'}.\n`;
-        } else {
-          dbSummaryContext += `Tiene ${compEvals.length} diagnósticos en borrador (ninguno completado).\n`;
-        }
-      });
+    if (['ayuda', 'help', 'menu', 'inicio', 'hola'].includes(cmd)) {
+      await sendWhatsAppMessage(sessionId, fromJid,
+        `👋 *Hola, ${greeting}!*\n\n` +
+        `*Comandos disponibles:*\n` +
+        `• *empresas* → Tus empresas y su nivel de cumplimiento\n` +
+        `• *empresa [nombre]* → Detalle y diagnósticos de una empresa\n` +
+        (isAdmin ? `• *todos* → Todas las empresas del sistema\n` : '') +
+        `• *ayuda* → Este menú\n\n` +
+        `También puedes escribir en lenguaje natural sobre la *Ley 1581* o el estado de tus diagnósticos. 🤖\n\n` +
+        `_PrivacyCheck CO · Sintaxis TI_`
+      );
+      return NextResponse.json({ ok: true, status: 'cmd_ayuda' });
     }
 
-    // Obtener respuesta de la IA
-    const replyText = await getGeminiReply(messageBody, dbSummaryContext);
+    if (cmd === 'empresas') {
+      await cmdEmpresas(sessionId, fromJid, companyIds);
+      return NextResponse.json({ ok: true, status: 'cmd_empresas' });
+    }
 
-    // Enviar respuesta por WhatsApp
-    await sendWhatsAppMessage(sessionId, fromJid, replyText);
+    if (cmd === 'todos' && isAdmin) {
+      await cmdEmpresas(sessionId, fromJid, undefined);
+      return NextResponse.json({ ok: true, status: 'cmd_todos_admin' });
+    }
 
-    return NextResponse.json({ ok: true, status: 'ai_reply_sent' });
-  } catch (error: any) {
-    console.error('Error en webhook de WhatsApp:', error);
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    if (cmd.startsWith('empresa ')) {
+      await cmdEmpresaDetalle(sessionId, fromJid, body.slice(8).trim(), companyIds);
+      return NextResponse.json({ ok: true, status: 'cmd_empresa_detalle' });
+    }
+
+    // ── 3. Consulta libre con Gemini ─────────────────────────────────────────
+    const context = await buildContext(companyIds);
+    const reply   = await geminiReply(body, context);
+    await sendWhatsAppMessage(sessionId, fromJid, reply);
+
+    return NextResponse.json({ ok: true, status: 'ai_reply' });
+  } catch (err: any) {
+    console.error('[WA Webhook] Error:', err);
+    return NextResponse.json({ ok: false, error: err.message }, { status: 500 });
   }
 }

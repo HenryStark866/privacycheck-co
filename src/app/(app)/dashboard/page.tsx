@@ -49,14 +49,14 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-end justify-between border-b border-white/10 pb-6">
+      <div className="flex items-end justify-between border-b border-slate-200 pb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <Activity className="w-4 h-4 text-brand-400" />
-            <span className="text-[10px] text-brand-400 uppercase tracking-[0.2em] font-bold">Módulo de Telemetría</span>
+            <Activity className="w-4 h-4 text-brand-500" />
+            <span className="text-[10px] text-brand-600 uppercase tracking-[0.2em] font-bold">Módulo de Telemetría</span>
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight text-glow">Panel de Control</h1>
-          <p className="text-slate-400 text-sm mt-1 font-light tracking-wide">Visión general del estado de cumplimiento Ley 1581</p>
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Panel de Control</h1>
+          <p className="text-slate-500 text-sm mt-1 font-light tracking-wide">Visión general del estado de cumplimiento Ley 1581</p>
         </div>
         <Link href="/companies/new" className="btn-primary group">
           <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" /> Nueva Entidad
@@ -88,16 +88,16 @@ export default async function DashboardPage() {
       </div>
 
       {/* Diagnósticos con buscador + paginación */}
-      <section className="glass-card rounded-2xl p-6 shadow-card mt-4 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-brand-500/5 rounded-full blur-[80px] pointer-events-none" />
+      <section className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 mt-4 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-brand-50 rounded-full blur-[80px] pointer-events-none" />
         
         <div className="flex items-center justify-between mb-6 relative z-10">
-          <h2 className="text-lg font-semibold text-white tracking-wide flex items-center gap-2">
-            <span className="w-1.5 h-6 bg-brand-500 rounded-full shadow-[0_0_10px_rgba(20,184,166,0.6)]" />
+          <h2 className="text-lg font-semibold text-slate-800 tracking-wide flex items-center gap-2">
+            <span className="w-1.5 h-6 bg-brand-500 rounded-full shadow-sm" />
             Registro de Diagnósticos
           </h2>
           {companies.length > 0 && (
-            <Link href="/companies" className="text-xs text-brand-400 hover:text-brand-300 font-medium flex items-center gap-1 uppercase tracking-wider group">
+            <Link href="/companies" className="text-xs text-brand-600 hover:text-brand-500 font-medium flex items-center gap-1 uppercase tracking-wider group">
               Explorar Entidades <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           )}
@@ -125,26 +125,26 @@ function StatCard({
   score?: number | null;
 }) {
   const colors = {
-    blue:  { bg: 'bg-blue-500/10 border-blue-500/20',  icon: 'text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.8)]', bar: 'from-blue-400 to-blue-500'  },
-    green: { bg: 'bg-emerald-500/10 border-emerald-500/20', icon: 'text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]', bar: 'from-emerald-400 to-emerald-500' },
-    cyan:  { bg: 'bg-brand-500/10 border-brand-500/20', icon: 'text-brand-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.8)]', bar: 'from-brand-400 to-brand-500' },
+    blue:  { bg: 'bg-blue-50 border-blue-100',  icon: 'text-blue-500', bar: 'from-blue-400 to-blue-500'  },
+    green: { bg: 'bg-emerald-50 border-emerald-100', icon: 'text-emerald-500', bar: 'from-emerald-400 to-emerald-500' },
+    cyan:  { bg: 'bg-brand-50 border-brand-100', icon: 'text-brand-500', bar: 'from-brand-400 to-brand-500' },
   }[color];
 
   return (
-    <div className="glass-card rounded-2xl p-6 relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300">
-      <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-[40px] opacity-20 group-hover:opacity-40 transition-opacity duration-500 ${colors.bg.split(' ')[0]}`} />
+    <div className="bg-white border border-slate-200 rounded-2xl p-6 relative overflow-hidden group hover:-translate-y-1 hover:shadow-md transition-all duration-300 shadow-sm">
+      <div className={`absolute top-0 right-0 w-24 h-24 rounded-full blur-[40px] opacity-40 group-hover:opacity-60 transition-opacity duration-500 ${colors.bg.split(' ')[0]}`} />
       
       <div className="flex items-center gap-4 mb-4 relative z-10">
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${colors.bg}`}>
           <span className={colors.icon}>{icon}</span>
         </div>
-        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-tight">{label}</p>
+        <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest leading-tight">{label}</p>
       </div>
       
-      <p className="text-4xl font-bold text-white tabular-nums tracking-tight relative z-10">{value}</p>
+      <p className="text-4xl font-bold text-slate-900 tabular-nums tracking-tight relative z-10">{value}</p>
       
       {accent && score != null && (
-        <div className="mt-5 h-1.5 bg-slate-800/50 rounded-full overflow-hidden relative z-10 border border-white/5">
+        <div className="mt-5 h-1.5 bg-slate-100 rounded-full overflow-hidden relative z-10 border border-slate-200">
           <div
             className={`h-full rounded-full bg-gradient-to-r ${colors.bar} transition-all duration-1000 ease-out relative`}
             style={{ width: `${score}%` }}

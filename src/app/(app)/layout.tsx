@@ -15,17 +15,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const displayEmail = user.email ?? '';
 
   return (
-    <div className="min-h-screen flex bg-navy-900 bg-grid-pattern text-slate-200">
+    <div className="min-h-screen flex bg-slate-50 bg-grid-pattern text-slate-800">
       {/* Sidebar */}
-      <aside className="w-[232px] shrink-0 bg-slate-900/40 backdrop-blur-xl border-r border-white/5 flex flex-col sticky top-0 h-screen shadow-[4px_0_24px_rgba(0,0,0,0.5)] z-20">
+      <aside className="w-[232px] shrink-0 bg-white/80 backdrop-blur-xl border-r border-slate-200 flex flex-col sticky top-0 h-screen shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-20">
         {/* Logo */}
-        <div className="flex items-center gap-3 px-5 py-6 border-b border-white/5">
-          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-brand-500/20 shadow-[0_0_15px_rgba(45,212,191,0.2)] border border-brand-400/30">
-            <Shield className="w-4.5 h-4.5 text-brand-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.8)]" />
+        <div className="flex items-center gap-3 px-5 py-6 border-b border-slate-100">
+          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-brand-50 shadow-[0_0_15px_rgba(20,184,166,0.1)] border border-brand-200">
+            <Shield className="w-4.5 h-4.5 text-brand-500" />
           </div>
           <div>
-            <p className="text-sm font-bold text-white leading-tight tracking-widest uppercase">PrivacyCheck</p>
-            <p className="text-[9px] text-brand-400 font-medium uppercase tracking-[0.2em]">Ley 1581 · 2012</p>
+            <p className="text-sm font-bold text-slate-900 leading-tight tracking-widest uppercase">PrivacyCheck</p>
+            <p className="text-[9px] text-brand-600 font-medium uppercase tracking-[0.2em]">Ley 1581 · 2012</p>
           </div>
         </div>
 
@@ -45,21 +45,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             alt="Sintaxis TI"
             width={60}
             height={60}
-            className="h-5 w-auto brightness-200 contrast-150 grayscale-0"
+            className="h-5 w-auto grayscale mix-blend-multiply opacity-80"
           />
         </div>
 
         {/* User */}
-        <div className="p-4 border-t border-white/5 bg-black/20">
+        <div className="p-4 border-t border-slate-100 bg-slate-50/50">
           <div className="flex items-center gap-3 mb-3">
             {/* Avatar */}
-            <div className="w-8 h-8 rounded-full bg-brand-500/20 border border-brand-500/30 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(45,212,191,0.15)]">
-              <span className="text-[11px] font-bold text-brand-300">{initials}</span>
+            <div className="w-8 h-8 rounded-full bg-brand-50 border border-brand-200 flex items-center justify-center shrink-0 shadow-sm">
+              <span className="text-[11px] font-bold text-brand-600">{initials}</span>
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium text-slate-200 truncate leading-tight uppercase tracking-wider">{displayEmail}</p>
-              <p className="text-[9px] text-brand-400 leading-tight uppercase tracking-widest mt-0.5 flex items-center gap-1">
-                <span className="w-1 h-1 rounded-full bg-brand-400 animate-pulse" />
+              <p className="text-[11px] font-medium text-slate-700 truncate leading-tight uppercase tracking-wider">{displayEmail}</p>
+              <p className="text-[9px] text-brand-600 leading-tight uppercase tracking-widest mt-0.5 flex items-center gap-1">
+                <span className="w-1 h-1 rounded-full bg-brand-500 animate-pulse" />
                 Online
               </p>
             </div>
@@ -70,7 +70,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
       {/* Main */}
       <main className="flex-1 overflow-auto min-w-0 relative">
-        <div className="absolute top-[-20%] left-[20%] w-[500px] h-[500px] rounded-full opacity-10 blur-[120px] bg-brand-500 pointer-events-none" />
+        <div className="absolute top-[-20%] left-[20%] w-[500px] h-[500px] rounded-full opacity-5 blur-[120px] bg-brand-400 pointer-events-none" />
         <div className="max-w-5xl mx-auto px-8 py-10 relative z-10">
           {children}
         </div>
@@ -85,9 +85,9 @@ function NavLink({ href, icon, children }: { href: string; icon: React.ReactNode
   return (
     <Link
       href={href}
-      className="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium text-slate-400 hover:bg-brand-500/10 hover:text-white transition-all duration-300 border border-transparent hover:border-brand-500/20"
+      className="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium text-slate-600 hover:bg-brand-50 hover:text-brand-700 transition-all duration-300 border border-transparent hover:border-brand-200"
     >
-      <span className="text-slate-500 group-hover:text-brand-400 group-hover:drop-shadow-[0_0_8px_rgba(45,212,191,0.8)] transition-all duration-300">
+      <span className="text-slate-400 group-hover:text-brand-500 transition-all duration-300">
         {icon}
       </span>
       <span className="tracking-wide">{children}</span>
