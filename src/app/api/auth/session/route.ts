@@ -37,6 +37,8 @@ export async function POST(request: Request) {
         photoURL,
         provider,
         whatsapp: null,
+        systemRole: 'user',
+        isApproved: false,
         onboardingComplete: false,
         createdAt:   new Date(),
         updatedAt:   new Date(),

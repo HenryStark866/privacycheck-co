@@ -53,7 +53,13 @@ function toMs(ts: FirebaseFirestore.Timestamp | Date | undefined): number {
 
 // ─── Companies ───────────────────────────────────────────────────────────────
 
-export async function getCompaniesByUser(uid: string): Promise<Array<Company & { role: string }>> {
+export async function getCompaniesByUser(uid: string, systemRole?: string): Promise<Array<Company & { role: string }>> {
+  if (systemRole === 'admin') {
+    const snap = await adminDb.collection('companies').get();
+    const results = snap.docs.map(doc => ({ id: doc.id, ...doc.data(), role: 'administrador' } as Company & { role: string }));
+    return results.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+  }
+
   // Query simple de un solo campo — NO necesita índice compuesto
   const memSnap = await adminDb
     .collection('memberships')

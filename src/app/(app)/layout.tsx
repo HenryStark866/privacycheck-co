@@ -1,14 +1,24 @@
 import { redirect } from 'next/navigation';
 import { verifySession } from '@/lib/firebase/session';
+import { adminDb } from '@/lib/firebase/admin';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Shield, LayoutDashboard, Building2, MessageSquare } from 'lucide-react';
+import { Shield, LayoutDashboard, Building2, MessageSquare, Users } from 'lucide-react';
 import LogoutButton from '@/components/LogoutButton';
 import AIChat from '@/components/AIChat';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await verifySession();
   if (!user) redirect('/login');
+
+  const userSnap = await adminDb.collection('users').doc(user.uid).get();
+  const userData = userSnap.data();
+
+  if (userData?.isApproved === false && userData?.systemRole !== 'admin') {
+    redirect('/pending-approval');
+  }
+
+  const systemRole = userData?.systemRole || 'user';
 
   // Extraer iniciales del email
   const initials = (user.email ?? '?').slice(0, 2).toUpperCase();
@@ -35,6 +45,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <NavLink href="/dashboard" icon={<LayoutDashboard className="w-4 h-4" />}>Panel Principal</NavLink>
           <NavLink href="/companies" icon={<Building2 className="w-4 h-4" />}>Entidades</NavLink>
           <NavLink href="/whatsapp" icon={<MessageSquare className="w-4 h-4" />}>Gateway WhatsApp</NavLink>
+          {systemRole === 'admin' && (
+            <>
+              <p className="text-[9px] font-bold text-brand-600 uppercase tracking-[0.15em] px-2 pt-4 pb-2">Administración</p>
+              <NavLink href="/admin/users" icon={<Users className="w-4 h-4" />}>Usuarios</NavLink>
+            </>
+          )}
         </nav>
 
         {/* Powered by */}

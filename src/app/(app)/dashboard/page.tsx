@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Building2, Plus, TrendingUp, CheckCircle2, ChevronRight, Activity } from 'lucide-react';
 import { verifySession } from '@/lib/firebase/session';
+import { adminDb } from '@/lib/firebase/admin';
 import { getCompaniesByUser, getEvaluationsByCompany } from '@/lib/firebase/firestore-helpers';
 import DashboardList from '@/components/DashboardList';
 
@@ -9,7 +10,10 @@ export default async function DashboardPage() {
   const user = await verifySession();
   if (!user) redirect('/login');
 
-  const companies = await getCompaniesByUser(user.uid);
+  const userSnap = await adminDb.collection('users').doc(user.uid).get();
+  const systemRole = userSnap.data()?.systemRole;
+
+  const companies = await getCompaniesByUser(user.uid, systemRole);
 
   const evalsByCompany = await Promise.all(
     companies.map((c) => getEvaluationsByCompany(c.id)),

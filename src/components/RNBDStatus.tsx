@@ -32,9 +32,11 @@ export default function RNBDStatus({ companyId, nit, razonSocial }: Props) {
       setResult({
         encontrado: false,
         estado: 'error',
-        mensaje: 'No se pudo conectar con el portal RNBD. Intenta de nuevo o consulta directamente en rnbd.sic.gov.co.',
-        url: 'https://rnbd.sic.gov.co',
+        mensaje: 'No se pudo conectar con la API. Consulta directamente en el portal oficial de la SIC.',
+        url: 'https://www.sic.gov.co/rnbd',
+        urlConsultaManual: 'https://www.sic.gov.co/rnbd',
         consultadoEn: new Date().toISOString(),
+        portalDisponible: false,
       });
       setQueried(true);
     } finally {
@@ -48,35 +50,39 @@ export default function RNBDStatus({ companyId, nit, razonSocial }: Props) {
   }, [nit]); // eslint-disable-line
 
   const iconMap = {
-    registrado: <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />,
+    registrado:    <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0 mt-0.5" />,
     no_registrado: <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />,
-    no_obligado: <CheckCircle2 className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />,
-    error: <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />,
-    no_aplica: <AlertTriangle className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />,
+    no_obligado:   <CheckCircle2 className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />,
+    error:         <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />,
+    no_aplica:     <AlertTriangle className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />,
+    manual:        <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />,
   };
 
   const bgMap = {
-    registrado: 'bg-green-50 border-green-200',
+    registrado:    'bg-green-50 border-green-200',
     no_registrado: 'bg-red-50 border-red-200',
-    no_obligado: 'bg-blue-50 border-blue-200',
-    error: 'bg-amber-50 border-amber-200',
-    no_aplica: 'bg-gray-50 border-gray-200',
+    no_obligado:   'bg-blue-50 border-blue-200',
+    error:         'bg-amber-50 border-amber-200',
+    no_aplica:     'bg-gray-50 border-gray-200',
+    manual:        'bg-amber-50 border-amber-200',
   };
 
   const badgeMap = {
-    registrado: 'bg-green-100 text-green-800',
+    registrado:    'bg-green-100 text-green-800',
     no_registrado: 'bg-red-100 text-red-800',
-    no_obligado: 'bg-blue-100 text-blue-800',
-    error: 'bg-amber-100 text-amber-800',
-    no_aplica: 'bg-gray-100 text-gray-600',
+    no_obligado:   'bg-blue-100 text-blue-800',
+    error:         'bg-amber-100 text-amber-800',
+    no_aplica:     'bg-gray-100 text-gray-600',
+    manual:        'bg-amber-100 text-amber-800',
   };
 
   const labelMap = {
-    registrado: 'Inscrita en RNBD ✓',
+    registrado:    'Inscrita en RNBD ✓',
     no_registrado: 'No inscrita en RNBD',
-    no_obligado: 'No obligada a registrarse',
-    error: 'Portal no disponible',
-    no_aplica: 'Sin NIT para consultar',
+    no_obligado:   'No obligada a registrarse',
+    error:         'Portal no disponible',
+    no_aplica:     'Sin NIT para consultar',
+    manual:        'Requiere verificación manual',
   };
 
   return (
@@ -147,14 +153,17 @@ export default function RNBDStatus({ companyId, nit, razonSocial }: Props) {
           <div className="border-t border-black/10 pt-3 flex items-center justify-between flex-wrap gap-2">
             <div className="text-xs text-gray-500">
               Consultado: {new Date(result.consultadoEn).toLocaleString('es-CO')}
+              {result.portalDisponible === false && (
+                <span className="ml-2 text-amber-600">(Portal sin consulta automatizada)</span>
+              )}
             </div>
             <a
-              href="https://rnbd.sic.gov.co"
+              href={result.urlConsultaManual ?? result.url ?? 'https://www.sic.gov.co/rnbd'}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-xs text-brand-600 hover:underline font-medium"
             >
-              Verificar en portal oficial <ExternalLink className="w-3 h-3" />
+              Consultar en portal SIC <ExternalLink className="w-3 h-3" />
             </a>
           </div>
         </div>

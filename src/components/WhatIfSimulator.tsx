@@ -28,7 +28,7 @@ export default function WhatIfSimulator({ answers, currentScore, gaps }: Props) 
     <div className="border border-brand-200 rounded-xl bg-brand-50 p-4 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-brand-800 flex items-center gap-2">
-          <Zap className="w-4 h-4" /> Simulador "¿Qué pasaría si…?"
+          <Zap className="w-4 h-4" /> Simulador &quot;¿Qué pasaría si…?&quot;
         </h3>
         <button onClick={reset} className="text-xs text-brand-600 hover:underline">Reiniciar</button>
       </div>

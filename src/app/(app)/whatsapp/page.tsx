@@ -64,7 +64,7 @@ export default function WhatsAppPage() {
     if (!session || session.status === 'CONNECTED') return;
     const id = setInterval(fetchStatus, 4000);
     return () => clearInterval(id);
-  }, [session?.status, fetchStatus]);
+  }, [session, fetchStatus]);
 
   const handleSaveNumber = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,9 +159,9 @@ export default function WhatsAppPage() {
                         <span>Iniciar OpenWA localmente (Windows)</span>
                       </div>
                       <p className="text-gray-500"># Abre una terminal y ejecuta:</p>
-                      <p className="text-yellow-400 break-all">cd "C:\Users\tabor\OneDrive\Escritorio\RETO No 2 hackaton2026\OpenWA-main"</p>
+                      <p className="text-yellow-400 break-all">cd &quot;C:\Users\tabor\OneDrive\Escritorio\RETO No 2 hackaton2026\OpenWA-main&quot;</p>
                       <p className="text-green-400">npm run dev</p>
-                      <p className="text-gray-500 pt-1"># Espera: "Nest application successfully started"</p>
+                      <p className="text-gray-500 pt-1"># Espera: &quot;Nest application successfully started&quot;</p>
                     </div>
                   </div>
                 ) : session?.status === 'CONNECTED' ? (

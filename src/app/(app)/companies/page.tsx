@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Building2, Plus, ChevronRight } from 'lucide-react';
 import { verifySession } from '@/lib/firebase/session';
+import { adminDb } from '@/lib/firebase/admin';
 import { getCompaniesByUser } from '@/lib/firebase/firestore-helpers';
 import { formatDate } from '@/lib/utils';
 
@@ -9,7 +10,10 @@ export default async function CompaniesPage() {
   const user = await verifySession();
   if (!user) redirect('/login');
 
-  const companies = await getCompaniesByUser(user.uid);
+  const userSnap = await adminDb.collection('users').doc(user.uid).get();
+  const systemRole = userSnap.data()?.systemRole;
+
+  const companies = await getCompaniesByUser(user.uid, systemRole);
 
   return (
     <div className="space-y-6">

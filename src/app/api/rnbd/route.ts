@@ -1,181 +1,124 @@
 /**
- * /api/rnbd — Consulta automática al Registro Nacional de Bases de Datos (SIC)
- * Portal: https://rnbd.sic.gov.co
+ * /api/rnbd — Consulta al Registro Nacional de Bases de Datos (SIC)
  *
- * El portal usa JSF. Estrategia:
- * 1. GET página principal → extraer ViewState
- * 2. POST búsqueda por NIT o razón social
- * 3. Parsear HTML de resultado
+ * ESTADO DEL PORTAL: rnbd.sic.gov.co devuelve HTTP 200 solo en la
+ * raíz (página de bienvenida JBoss EAP 6, 1.4 KB) y 404 en todas
+ * las rutas de consulta JSF. El scraping no es posible.
+ *
+ * Estrategia actual:
+ * 1. Intentar acceder al portal oficial.
+ * 2. Si no responde o da error, generar una evaluación determinística
+ *    basada en las reglas de la Ley 1581 y el Decreto 1377 de 2013.
+ * 3. Siempre incluir el enlace oficial para que el usuario consulte
+ *    manualmente si lo desea.
  */
 import { NextResponse } from 'next/server';
 import { verifySession } from '@/lib/firebase/session';
 import { getMembership } from '@/lib/firebase/firestore-helpers';
 
-const RNBD_BASE = 'https://rnbd.sic.gov.co';
-const TIMEOUT_MS = 12000;
+const RNBD_BASE  = 'https://rnbd.sic.gov.co';
+const RNBD_LINK  = 'https://www.sic.gov.co/rnbd';          // Portal SIC RNBD oficial
+const TIMEOUT_MS = 8000;
 
 export interface RNBDResult {
   encontrado: boolean;
   razonSocial?: string;
   nit?: string;
-  numeroBD?: number;          // número de bases de datos registradas
+  numeroBD?: number;
   tienePolitica?: boolean;
   canales?: string[];
-  obligadoRegistro?: boolean; // basado en regla 100.000 UVT
+  obligadoRegistro?: boolean;
   mensaje: string;
-  estado: 'registrado' | 'no_registrado' | 'no_obligado' | 'error' | 'no_aplica';
+  estado: 'registrado' | 'no_registrado' | 'no_obligado' | 'error' | 'no_aplica' | 'manual';
   url: string;
+  urlConsultaManual: string;
   consultadoEn: string;
+  portalDisponible: boolean;
 }
 
-async function fetchWithTimeout(url: string, options: RequestInit = {}): Promise<Response> {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), TIMEOUT_MS);
-  try {
-    return await fetch(url, { ...options, signal: controller.signal });
-  } finally {
-    clearTimeout(id);
-  }
-}
+/**
+ * Evaluación determinística de la obligatoriedad de registro en el RNBD
+ * basada en el Decreto 1377 de 2013, Art. 2.
+ *
+ * Están obligadas a registrarse las personas jurídicas y naturales
+ * que traten datos personales y sean responsables de bases de datos
+ * que superen los 100.000 UVT de activos.
+ *
+ * En la práctica, empresas grandes y medianas deben registrarse;
+ * microempresas y personas naturales generalmente no.
+ */
+function evaluarObligacion(query: string): Pick<RNBDResult, 'obligadoRegistro' | 'estado' | 'mensaje'> {
+  const lower = query.toLowerCase();
 
-/** Extrae el ViewState de la página JSF */
-function extractViewState(html: string): string | null {
-  const match = html.match(/id="?javax\.faces\.ViewState"?[^>]*value="([^"]+)"/i)
-    ?? html.match(/name="javax\.faces\.ViewState"[^>]*value="([^"]+)"/i);
-  return match ? match[1] : null;
-}
+  // Heurísticas simples basadas en palabras clave
+  const esMicro =
+    lower.includes('micro') ||
+    lower.includes('persona natural') ||
+    lower.includes('independiente');
 
-/** Detecta si hay resultados en el HTML de respuesta */
-function parseRNBDResponse(html: string, query: string): Omit<RNBDResult, 'url' | 'consultadoEn'> {
-  const lower = html.toLowerCase();
+  const esGrande =
+    lower.includes('s.a.') ||
+    lower.includes('s.a.s') ||
+    lower.includes('ltda') ||
+    lower.includes('s.a.s.') ||
+    lower.includes('sociedad') ||
+    lower.includes('grupo') ||
+    lower.includes('holding') ||
+    lower.includes('banco') ||
+    lower.includes('financiero') ||
+    lower.includes('corp') ||
+    lower.includes('inc');
 
-  // Indicadores de "no encontrado"
-  const noEncontrado =
-    lower.includes('no se encontraron resultados') ||
-    lower.includes('no existen registros') ||
-    lower.includes('no se encontró') ||
-    lower.includes('0 registros') ||
-    lower.includes('sin resultados');
-
-  if (noEncontrado) {
+  if (esMicro) {
     return {
-      encontrado: false,
-      obligadoRegistro: undefined, // no podemos saberlo solo con esto
-      estado: 'no_registrado',
-      mensaje: `La empresa "${query}" no aparece inscrita en el RNBD. Si tiene activos superiores a 100.000 UVT (≈ $4.740 millones COP en 2024), está obligada a registrarse. Si es una empresa pequeña o mediana, puede no estar obligada al registro pero sí debe cumplir con el resto de la Ley 1581.`,
+      obligadoRegistro: false,
+      estado: 'no_obligado',
+      mensaje:
+        `Basado en los criterios del Decreto 1377 de 2013, "${query}" posiblemente NO está obligada ` +
+        `a inscribirse en el RNBD (microempresa o persona natural). Sin embargo, SIEMPRE debe cumplir ` +
+        `con los demás principios de la Ley 1581: aviso de privacidad, obtención de consentimiento y ` +
+        `atención de solicitudes de titulares. Verifique en el portal oficial con el NIT exacto.`,
     };
   }
 
-  // Intentar extraer datos si hay resultados
-  const razonSocialMatch = html.match(/razón social[^:]*:\s*<[^>]+>([^<]+)/i)
-    ?? html.match(/razonSocial[^>]*>([^<]+)/i);
-  const razonSocial = razonSocialMatch?.[1]?.trim();
-
-  const nitMatch = html.match(/nit[^:]*:\s*<[^>]+>([^<]+)/i)
-    ?? html.match(/\b\d{9,10}-\d\b/);
-  const nitFound = Array.isArray(nitMatch) ? nitMatch[1]?.trim() : nitMatch?.[0];
-
-  const bdMatch = html.match(/(\d+)\s*base[s]?\s*de\s*datos/i)
-    ?? html.match(/total[^:]*:\s*(\d+)/i);
-  const numeroBD = bdMatch ? parseInt(bdMatch[1]) : undefined;
-
-  const tienePolitica =
-    lower.includes('política de tratamiento') ||
-    lower.includes('aviso de privacidad') ||
-    lower.includes('politica registrada');
+  if (esGrande) {
+    return {
+      obligadoRegistro: true,
+      estado: 'no_aplica',
+      mensaje:
+        `"${query}" parece ser una entidad de mayor envergadura. Según el Decreto 1377 de 2013, ` +
+        `las personas jurídicas responsables de bases de datos que superen los 100.000 UVT de activos ` +
+        `(aprox. $4.740 millones COP en 2024) están obligadas a inscribirse ante la SIC en el RNBD. ` +
+        `No fue posible consultar el registro automáticamente. Por favor verifique directamente ` +
+        `en el portal oficial de la SIC ingresando el NIT o razón social.`,
+    };
+  }
 
   return {
-    encontrado: true,
-    razonSocial: razonSocial ?? query,
-    nit: nitFound,
-    numeroBD,
-    tienePolitica,
-    estado: 'registrado',
-    mensaje: `La empresa aparece inscrita en el RNBD de la SIC${numeroBD !== undefined ? ` con ${numeroBD} base(s) de datos declarada(s)` : ''}. ${tienePolitica ? 'Tiene política de tratamiento reportada.' : 'No se detectó política de tratamiento publicada en el RNBD.'} Esto indica cumplimiento con el deber de registro ante la SIC.`,
+    obligadoRegistro: undefined,
+    estado: 'manual',
+    mensaje:
+      `No fue posible consultar el RNBD de forma automática (el portal de la SIC requiere acceso ` +
+      `manual). Consulte directamente con el NIT o razón social exacta de la empresa. ` +
+      `Recuerde que la obligatoriedad de inscripción depende del volumen de activos (Decreto 1377/2013, Art. 2).`,
   };
 }
 
-async function consultarRNBD(query: string, tipo: 'nit' | 'razon'): Promise<RNBDResult> {
-  const urlConsulta = `${RNBD_BASE}/sic/consulta`;
-  const urlBase = `${RNBD_BASE}/`;
-  const consultadoEn = new Date().toISOString();
-
+async function probarPortal(): Promise<boolean> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
-    // Paso 1: Obtener la página principal para el ViewState
-    const pageRes = await fetchWithTimeout(urlBase, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        Accept: 'text/html,application/xhtml+xml',
-      },
+    const res = await fetch(RNBD_BASE, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; PrivacyCheckCO/1.0)' },
     });
-
-    if (!pageRes.ok) throw new Error(`Portal RNBD no disponible: ${pageRes.status}`);
-
-    const pageHtml = await pageRes.text();
-    const viewState = extractViewState(pageHtml);
-
-    // Construir parámetros de búsqueda
-    const params = new URLSearchParams();
-    if (viewState) params.append('javax.faces.ViewState', viewState);
-    params.append('javax.faces.partial.ajax', 'true');
-    params.append('javax.faces.partial.execute', '@all');
-    params.append('javax.faces.partial.render', '@all');
-
-    if (tipo === 'nit') {
-      params.append('formConsulta:nit', query.replace(/\D/g, ''));
-      params.append('formConsulta:btnConsultaNit', 'Consultar');
-      params.append('formConsulta:btnConsultaNit', 'formConsulta:btnConsultaNit');
-    } else {
-      params.append('formConsulta:razonSocial', query);
-      params.append('formConsulta:btnConsultaRazon', 'Consultar');
-      params.append('formConsulta:btnConsultaRazon', 'formConsulta:btnConsultaRazon');
-    }
-
-    // Extraer cookie de sesión del paso 1
-    const setCookie = pageRes.headers.get('set-cookie') ?? '';
-    const jsessionId = setCookie.match(/JSESSIONID=([^;]+)/i)?.[1];
-
-    // Paso 2: Hacer la búsqueda
-    const searchRes = await fetchWithTimeout(urlConsulta, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        Accept: 'text/html,application/xhtml+xml,*/*',
-        Referer: urlBase,
-        ...(jsessionId ? { Cookie: `JSESSIONID=${jsessionId}` } : {}),
-      },
-      body: params.toString(),
-    });
-
-    const resultHtml = await searchRes.text();
-    const parsed = parseRNBDResponse(resultHtml, query);
-
-    return {
-      ...parsed,
-      url: `${RNBD_BASE}/sic/consulta`,
-      consultadoEn,
-    };
-  } catch (err: any) {
-    // Si el portal no responde, dar información útil igual
-    if (err.name === 'AbortError') {
-      return {
-        encontrado: false,
-        estado: 'error',
-        mensaje: 'El portal RNBD (rnbd.sic.gov.co) tardó demasiado en responder. Puedes consultarlo directamente en https://rnbd.sic.gov.co ingresando el NIT o razón social de la empresa.',
-        url: RNBD_BASE,
-        consultadoEn,
-      };
-    }
-
-    console.error('RNBD fetch error:', err.message);
-    return {
-      encontrado: false,
-      estado: 'error',
-      mensaje: `No fue posible conectar con el portal RNBD de la SIC. Consulta directamente en https://rnbd.sic.gov.co. Error: ${err.message}`,
-      url: RNBD_BASE,
-      consultadoEn,
-    };
+    clearTimeout(timer);
+    // El portal responde 200 pero solo sirve página EAP 6 sin contenido útil
+    const text = await res.text();
+    return res.ok && text.length > 500 && !text.includes('EAP 6');
+  } catch {
+    clearTimeout(timer);
+    return false;
   }
 }
 
@@ -184,11 +127,12 @@ export async function GET(request: Request) {
   if (!user) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
   const { searchParams } = new URL(request.url);
-  const nit = searchParams.get('nit')?.trim();
-  const razon = searchParams.get('razon')?.trim();
+  const nit       = searchParams.get('nit')?.trim();
+  const razon     = searchParams.get('razon')?.trim();
   const companyId = searchParams.get('companyId')?.trim();
+  const query     = nit || razon;
 
-  if (!nit && !razon) {
+  if (!query) {
     return NextResponse.json({ error: 'Parámetro nit o razon requerido' }, { status: 400 });
   }
 
@@ -198,9 +142,18 @@ export async function GET(request: Request) {
     if (!membership) return NextResponse.json({ error: 'Sin acceso' }, { status: 403 });
   }
 
-  const result = nit
-    ? await consultarRNBD(nit, 'nit')
-    : await consultarRNBD(razon!, 'razon');
+  const consultadoEn    = new Date().toISOString();
+  const portalDisponible = await probarPortal();
+  const evaluacion       = evaluarObligacion(query);
+
+  const result: RNBDResult = {
+    encontrado: false,
+    ...evaluacion,
+    url:                RNBD_LINK,
+    urlConsultaManual:  `${RNBD_LINK}`,
+    consultadoEn,
+    portalDisponible,
+  };
 
   return NextResponse.json(result);
 }
