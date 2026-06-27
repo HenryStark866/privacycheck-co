@@ -37,8 +37,26 @@ Thumbs.db
 
 # Carpetas ajenas al proyecto
 OpenWA-main/
+supabase/
 
-# Scripts de credenciales
+# Scripts de deploy y credenciales (solo uso local)
 FIREBASE_CREDENCIALES.md
 fix_and_start.bat
+subir_github.bat
+limpiar_proyecto.bat
+run_vercel_deploy.bat
+vercel_deploy_api.ps1
 tsconfig.tsbuildinfo
+
+# PDFs y assets de referencia
+*.pdf
+iconocalvatec.ico
+logocalvaltac.png
+
+# Archivos basura creados por firebase init fallido
+Automatic
+Backend
+Region
+Se
+Selecciona
+branch
