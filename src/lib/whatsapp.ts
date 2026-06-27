@@ -129,14 +129,7 @@ export async function getWhatsAppStatus(customSessionName?: string): Promise<Wha
 
     return result;
   } catch (error) {
-    // FALLBACK SIMULADO (MOCK) PARA HACKATHON EN VERCEL
-    console.warn("[WA] OpenWA no responde. Usando sesión de prueba (Mock) para Vercel.");
-    return {
-      id: 'mock-session-hackathon',
-      name: name,
-      status: 'CONNECTED',
-      phoneNumber: process.env.ADMIN_WHATSAPP_NUMBER || '573245769748',
-    };
+    throw error; // Propagar el error real para que la UI muestre el estado correcto
   }
 }
 
@@ -210,11 +203,6 @@ export async function sendWhatsAppMessage(sessionId: string, to: string, text: s
   // Usar la sesión activa: primero el sessionId recibido, luego SESSION_NAME como fallback
   const activeSession = sessionId || SESSION_NAME;
   const chatId = toChatId(to);
-
-  if (activeSession === 'mock-session-hackathon') {
-    console.log(`[WA MOCK] Enviando mensaje a ${chatId}: "${text}"`);
-    return { ok: true, mock: true };
-  }
 
   const res = await fetch(`${OPENWA_API_URL}/api/sessions/${activeSession}/messages/send-text`, {
     method: 'POST',

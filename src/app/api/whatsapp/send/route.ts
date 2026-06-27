@@ -5,7 +5,7 @@
  */
 import { NextResponse } from 'next/server';
 import { verifySession } from '@/lib/firebase/session';
-import { getActiveSessionId, sendWhatsAppMessage, toChatId } from '@/lib/whatsapp';
+import { SESSION_NAME, sendWhatsAppMessage, toChatId } from '@/lib/whatsapp';
 
 export async function POST(request: Request) {
   const session = await verifySession();
@@ -17,13 +17,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'to y text son requeridos' }, { status: 400 });
     }
 
-    const sessionId = await getActiveSessionId(`session_${session.uid}`);
-    if (!sessionId) {
-      return NextResponse.json({ error: 'OpenWA no está conectado. Inicia el gateway localmente.' }, { status: 503 });
+    // SESSION_NAME es la sesión activa en el gateway local/VPS (por defecto 'walle')
+    // configurable via OPENWA_SESSION_NAME en Vercel
+    try {
+      await sendWhatsAppMessage(SESSION_NAME, toChatId(to), text);
+      return NextResponse.json({ ok: true, to, sessionId: SESSION_NAME });
+    } catch {
+      return NextResponse.json({
+        error: 'OpenWA no está conectado. Inicia el gateway localmente (npm run dev en OpenWA-main) o verifica OPENWA_API_URL en Vercel.'
+      }, { status: 503 });
     }
-
-    await sendWhatsAppMessage(sessionId, toChatId(to), text);
-    return NextResponse.json({ ok: true, to, sessionId });
   } catch (err: any) {
     console.error('[WA Send] Error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
