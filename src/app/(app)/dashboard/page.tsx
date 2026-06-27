@@ -26,7 +26,7 @@ export default async function DashboardPage() {
   const allEvaluations = evalsByCompany
     .flat()
     .sort((a, b) => {
-      const toMs = (ts: any) => ts?.toMillis?.() ?? ts?.seconds * 1000 ?? new Date(ts).getTime() ?? 0;
+      const toMs = (ts: any) => ts?.toMillis?.() ?? (ts?.seconds != null ? ts.seconds * 1000 : null) ?? (ts ? new Date(ts).getTime() : 0);
       return toMs(b.createdAt) - toMs(a.createdAt);
     })
     .map((ev) => ({
