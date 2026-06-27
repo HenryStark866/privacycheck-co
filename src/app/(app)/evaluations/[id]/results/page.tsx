@@ -198,4 +198,45 @@ export default function ResultsPage() {
 
       {/* Notas */}
       {notes.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-1.5">
+          <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Notas de cumplimiento</p>
+          {notes.map((n, i) => (
+            <p key={i} className="text-sm text-amber-800">{n}</p>
+          ))}
+        </div>
+      )}
+
+      {/* Brechas */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6">
+        <GapList gaps={gaps} />
+      </div>
+
+      {/* Simulador What-If */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6">
+        <WhatIfSimulator answers={answers} gaps={gaps} />
+      </div>
+
+      {/* Plan de acción IA */}
+      {actions.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6 space-y-4">
+          <h3 className="text-sm font-semibold text-gray-900">Plan de acción recomendado</h3>
+          <ol className="space-y-3">
+            {actions.map((item, i) => (
+              <li key={i} className="flex gap-3">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-brand-600 text-white text-xs font-bold flex items-center justify-center">
+                  {i + 1}
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{item.accion}</p>
+                  {item.articulo && (
+                    <p className="text-xs text-gray-400 mt-0.5">Ref: {item.articulo}</p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
+    </div>
+  );
+}
