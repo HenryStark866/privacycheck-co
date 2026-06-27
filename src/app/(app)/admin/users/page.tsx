@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { ShieldAlert, UserCheck, UserX, Trash2, Edit2, Plus, X, Loader2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import WhatsAppField from '@/components/WhatsAppField';
+import LiveClock from '@/components/LiveClock';
 
 interface UserData {
   id: string;
@@ -200,6 +201,7 @@ export default function AdminUsersPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Gestión de Usuarios</h1>
           <p className="text-gray-500 text-sm mt-0.5">Administra los accesos y roles del sistema.</p>
+          <LiveClock className="text-xs text-slate-400 font-medium mt-1" />
         </div>
         <button 
           onClick={() => {

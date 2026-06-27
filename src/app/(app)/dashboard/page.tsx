@@ -1,10 +1,11 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Building2, Plus, TrendingUp, CheckCircle2, ChevronRight, Activity } from 'lucide-react';
+import { Building2, Plus, TrendingUp, CheckCircle2, Activity } from 'lucide-react';
 import { verifySession } from '@/lib/firebase/session';
 import { adminDb } from '@/lib/firebase/admin';
 import { getCompaniesByUser, getEvaluationsByCompany } from '@/lib/firebase/firestore-helpers';
 import DashboardList from '@/components/DashboardList';
+import LiveClock from '@/components/LiveClock';
 
 export default async function DashboardPage() {
   const user = await verifySession();
@@ -61,6 +62,7 @@ export default async function DashboardPage() {
           </div>
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Panel de Control</h1>
           <p className="text-slate-500 text-sm mt-1 font-light tracking-wide">Visión general del estado de cumplimiento Ley 1581</p>
+          <LiveClock className="text-xs text-slate-400 font-medium mt-2" />
         </div>
         <Link href="/companies/new" className="btn-primary group">
           <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" /> Nueva Entidad

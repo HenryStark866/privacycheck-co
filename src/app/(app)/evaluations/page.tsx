@@ -6,8 +6,8 @@ import { getSystemRole, getAllEvaluations, getCompaniesByUser } from '@/lib/fire
 import MaturityBadge from '@/components/MaturityBadge';
 import type { MaturityLevel } from '@/lib/scoring';
 import { formatDate } from '@/lib/utils';
-
 import StartEvaluationModalButton from '@/components/StartEvaluationModalButton';
+import LiveClock from '@/components/LiveClock';
 
 function serializeTs(ts: any): string {
   if (!ts) return new Date().toISOString();
@@ -58,6 +58,7 @@ export default async function EvaluationsPage() {
               ? 'Todos los autodiagnósticos de Ley 1581 en el sistema'
               : 'Gestión y seguimiento de diagnósticos de tus organizaciones'}
           </p>
+          <LiveClock className="text-xs text-slate-400 font-medium mt-1" />
         </div>
         <StartEvaluationModalButton companies={plainCompanies} />
       </div>

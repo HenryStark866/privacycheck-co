@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Shield, LayoutDashboard, Building2, MessageSquare, Users, ClipboardCheck, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Building2, MessageSquare, Users, ClipboardCheck, Menu, X } from 'lucide-react';
 import LogoutButton from '@/components/LogoutButton';
 
 interface SidebarProps {
@@ -42,8 +42,8 @@ export default function Sidebar({ systemRole, initials, displayEmail }: SidebarP
       {/* Mobile Top Bar */}
       <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/90 backdrop-blur-md border-b border-slate-200 z-40 flex items-center justify-between px-4">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-brand-50 shadow-[0_0_15px_rgba(20,184,166,0.1)] border border-brand-200">
-            <Shield className="w-4.5 h-4.5 text-brand-500" />
+          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-white border border-slate-200 shadow-sm overflow-hidden">
+            <Image src="/icon-cavaltec.png" alt="Logo" width={32} height={32} className="w-6 h-6 object-contain" />
           </div>
           <div>
             <p className="text-sm font-bold text-slate-900 leading-tight tracking-widest uppercase">PrivacyCheck</p>
@@ -74,8 +74,8 @@ export default function Sidebar({ systemRole, initials, displayEmail }: SidebarP
       `}>
         {/* Logo (Desktop only) */}
         <div className="hidden lg:flex items-center gap-3 px-5 py-6 border-b border-slate-100">
-          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-brand-50 shadow-[0_0_15px_rgba(20,184,166,0.1)] border border-brand-200">
-            <Shield className="w-4.5 h-4.5 text-brand-500" />
+          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-white border border-slate-200 shadow-sm overflow-hidden">
+            <Image src="/icon-cavaltec.png" alt="Logo" width={32} height={32} className="w-6 h-6 object-contain" />
           </div>
           <div>
             <p className="text-sm font-bold text-slate-900 leading-tight tracking-widest uppercase">PrivacyCheck</p>

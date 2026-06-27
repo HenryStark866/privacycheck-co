@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react';
 import { verifySession } from '@/lib/firebase/session';
 import { getSystemRole, getCompaniesByUser } from '@/lib/firebase/firestore-helpers';
 import CompaniesList from '@/components/CompaniesList';
+import LiveClock from '@/components/LiveClock';
 
 function serializeTs(ts: any): string {
   if (!ts) return new Date().toISOString();
@@ -39,6 +40,7 @@ export default async function CompaniesPage() {
               ? 'Todas las organizaciones del sistema'
               : 'Gestiona las organizaciones que diagnosticas'}
           </p>
+          <LiveClock className="text-xs text-slate-400 font-medium mt-1" />
         </div>
         <Link href="/companies/new" className="btn-primary">
           <Plus className="w-4 h-4" /> Nueva empresa
