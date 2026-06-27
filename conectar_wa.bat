@@ -1,14 +1,18 @@
 @echo off
-title Tunel Seguro WhatsApp - Cavaltec
+title Tunel Seguro WhatsApp y OpenWA - Cavaltec
 echo ========================================================
-echo   Iniciando Tunel Publico para WhatsApp (OpenWA)
+echo   Iniciando Entorno Completo WhatsApp (OpenWA + Tunel)
 echo ========================================================
 echo.
-echo Conectando el puerto 2785 a https://cavaltec-wa-gateway-1234.loca.lt
+echo 1. Iniciando el gateway de WhatsApp (OpenWA) localmente...
+start "OpenWA Server" cmd /c "cd OpenWA-main && npm run dev"
+echo    [OK] Servidor de WhatsApp abriendo en nueva ventana...
+echo.
+echo 2. Conectando el puerto 2785 a https://cavaltec-wa-gateway-1234.loca.lt
 echo.
 echo IMPORTANTE: 
-echo 1. Debes dejar esta ventana ABIERTA para que Vercel se comunique con tu equipo.
-echo 2. El servicio de WhatsApp (npm run dev en OpenWA-main) tambien debe estar corriendo.
+echo - Deja esta ventana y la nueva que se abrio ABIERTAS.
+echo - Vercel utilizara este tunel para comunicarse con tu equipo.
 echo.
 echo Presiona Ctrl+C para detener el tunel.
 echo.
