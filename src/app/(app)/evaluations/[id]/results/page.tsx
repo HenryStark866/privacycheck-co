@@ -11,7 +11,7 @@ import WhatIfSimulator from '@/components/WhatIfSimulator';
 import type { MaturityLevel } from '@/lib/scoring';
 import type { ActionItem } from '@/lib/ai/prompts';
 import { buildFallbackActionPlan } from '@/lib/ai/prompts';
-import { Download, ArrowLeft, Sparkles, RefreshCw, AlertCircle } from 'lucide-react';
+import { Download, ArrowLeft, Sparkles, RefreshCw, AlertCircle, ShieldCheck, ExternalLink, Link as LinkIcon } from 'lucide-react';
 
 export default function ResultsPage() {
   const { id } = useParams<{ id: string }>();
@@ -252,6 +252,58 @@ export default function ResultsPage() {
           </ol>
         </div>
       )}
+      {/* Guía Paso a Paso (Privacy by Design) */}
+      <div className="bg-gradient-to-br from-brand-50 to-white rounded-2xl border border-brand-100 shadow-sm p-6 space-y-5 relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-4 opacity-5">
+          <ShieldCheck className="w-32 h-32 text-brand-600" />
+        </div>
+        <div className="relative z-10">
+          <h3 className="text-sm font-bold text-brand-800 flex items-center gap-2 mb-4">
+            <ShieldCheck className="w-5 h-5 text-brand-600" />
+            Guía de Implementación: Privacy by Design
+          </h3>
+          <p className="text-xs text-brand-700 mb-4 font-medium">Sigue estos 5 pasos fundamentales para incorporar Habeas Data desde la fase de diseño:</p>
+          <div className="space-y-4">
+            {[
+              { num: "1", title: "Evaluar antes de recopilar (Proactividad)", desc: "Define exactamente qué datos necesitas y para qué. No recopiles información 'por si acaso'." },
+              { num: "2", title: "Privacidad por defecto", desc: "Configura sistemas para que los datos tengan la máxima privacidad sin que el usuario deba ajustarlos manualmente." },
+              { num: "3", title: "Autorización expresa (Opt-in)", desc: "Diseña formularios donde el usuario deba dar clic activamente para aceptar la política de tratamiento de datos." },
+              { num: "4", title: "Seguridad de extremo a extremo", desc: "Cifra datos sensibles y restringe el acceso interno solo al personal estrictamente necesario." },
+              { num: "5", title: "Transparencia (Canal PQRS)", desc: "Habilita un correo o formulario para que los titulares puedan actualizar o eliminar sus datos rápidamente." }
+            ].map((step, idx) => (
+              <div key={idx} className="flex gap-3 bg-white/60 p-3 rounded-xl border border-brand-50">
+                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-brand-200 text-brand-800 text-xs font-bold flex items-center justify-center">
+                  {step.num}
+                </span>
+                <div>
+                  <p className="text-sm font-bold text-slate-800">{step.title}</p>
+                  <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">{step.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Enlaces Oficiales */}
+      <div className="bg-slate-50 rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+        <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+          <LinkIcon className="w-4 h-4 text-slate-500" />
+          Enlaces Oficiales de Consulta
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {[
+            { title: 'Superintendencia de Industria y Comercio (SIC)', url: 'https://www.sic.gov.co/proteccion-de-datos-personales' },
+            { title: 'Ley Estatutaria 1581 de 2012', url: 'http://www.secretariasenado.gov.co/senado/basedoc/ley_1581_2012.html' },
+            { title: 'Decreto Reglamentario 1377 de 2013', url: 'http://www.suin-juriscol.gov.co/viewDocument.asp?id=1416397' }
+          ].map((link, idx) => (
+            <a key={idx} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-start justify-between gap-2 p-3 bg-white rounded-xl border border-slate-200 hover:border-brand-300 hover:shadow-sm transition-all group">
+              <span className="text-xs font-medium text-slate-700 group-hover:text-brand-600 transition-colors">{link.title}</span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-brand-500 shrink-0" />
+            </a>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

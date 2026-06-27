@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { verifySession } from '@/lib/firebase/session';
-import { createCompany, createMembership } from '@/lib/firebase/firestore-helpers';
+import { createCompany, createMembership, logActivity } from '@/lib/firebase/firestore-helpers';
 
 export async function POST(request: Request) {
   const user = await verifySession();
@@ -13,6 +13,9 @@ export async function POST(request: Request) {
 
   const companyId = await createCompany({ name, nit, sector, size, createdBy: user.uid });
   await createMembership(user.uid, companyId, 'administrador');
+
+  // Trazabilidad de uso
+  await logActivity(user.uid, 'company_created', { companyId, name });
 
   return NextResponse.json({ id: companyId });
 }

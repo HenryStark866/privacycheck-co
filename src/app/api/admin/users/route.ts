@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { verifySession } from '@/lib/firebase/session';
 import { adminDb, adminAuth } from '@/lib/firebase/admin';
 import { FieldValue } from 'firebase-admin/firestore';
+import { logActivity } from '@/lib/firebase/firestore-helpers';
 
 // GET: Listar todos los usuarios
 export async function GET() {
@@ -68,6 +69,9 @@ export async function POST(request: Request) {
       updatedAt: FieldValue.serverTimestamp(),
       lastLoginAt: FieldValue.serverTimestamp(),
     });
+
+    // Trazabilidad de uso
+    await logActivity(user.uid, 'user_created', { createdUid: userRecord.uid, email, systemRole: systemRole || 'user' });
 
     return NextResponse.json({ ok: true, uid: userRecord.uid });
   } catch (err: any) {

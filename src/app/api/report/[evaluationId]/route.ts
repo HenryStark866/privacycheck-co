@@ -132,7 +132,43 @@ export async function GET(_req: Request, { params }: { params: { evaluationId: s
     doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
     const lines = doc.splitTextToSize((interpretRec as any).content as string, pageW - margin * 2);
     doc.text(lines, margin, y);
+    y += lines.length * 4 + 10;
   }
+
+  // Guía Paso a Paso: Privacy by Design
+  if (y > 200) { doc.addPage(); y = 20; }
+  doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(79, 70, 229);
+  doc.text('Guía Práctica: Implementación de Habeas Data (Privacy by Design)', margin, y); y += 8;
+  doc.setFontSize(9); doc.setTextColor(30, 30, 30);
+  
+  const pasos = [
+    { num: "1", title: "Evaluar antes de recopilar (Proactividad)", desc: "Define exactamente qué datos necesitas y para qué. No recopiles información 'por si acaso'." },
+    { num: "2", title: "Privacidad por defecto", desc: "Configura sistemas para que los datos tengan la máxima privacidad sin que el usuario deba ajustarlos manualmente." },
+    { num: "3", title: "Autorización expresa (Opt-in)", desc: "Diseña formularios donde el usuario deba dar clic activamente para aceptar la política de tratamiento de datos." },
+    { num: "4", title: "Seguridad de extremo a extremo", desc: "Cifra datos sensibles y restringe el acceso interno solo al personal estrictamente necesario." },
+    { num: "5", title: "Transparencia (Canal PQRS)", desc: "Habilita un correo o formulario para que los titulares puedan actualizar o eliminar sus datos rápidamente." }
+  ];
+
+  pasos.forEach(p => {
+    doc.setFont('helvetica', 'bold');
+    doc.text(`${p.num}. ${p.title}:`, margin, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    const descLines = doc.splitTextToSize(p.desc, pageW - margin * 2 - 5);
+    doc.text(descLines, margin + 5, y + 4.5);
+    y += descLines.length * 4 + 6;
+  });
+  y += 5;
+
+  // Enlaces Oficiales
+  if (y > 260) { doc.addPage(); y = 20; }
+  doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(79, 70, 229);
+  doc.text('Enlaces Oficiales y de Consulta', margin, y); y += 6;
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(37, 99, 235);
+  
+  doc.textWithLink('1. Superintendencia de Industria y Comercio (SIC)', margin, y, { url: 'https://www.sic.gov.co/proteccion-de-datos-personales' }); y += 5;
+  doc.textWithLink('2. Ley Estatutaria 1581 de 2012', margin, y, { url: 'http://www.secretariasenado.gov.co/senado/basedoc/ley_1581_2012.html' }); y += 5;
+  doc.textWithLink('3. Decreto Reglamentario 1377 de 2013', margin, y, { url: 'http://www.suin-juriscol.gov.co/viewDocument.asp?id=1416397' }); y += 10;
 
   // Pie de página
   const pageCount = doc.getNumberOfPages();

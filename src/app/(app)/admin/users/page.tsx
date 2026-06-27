@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { ShieldAlert, UserCheck, UserX, Trash2, Edit2, Plus, X, Loader2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import WhatsAppField from '@/components/WhatsAppField';
 
 interface UserData {
   id: string;
@@ -374,10 +375,11 @@ export default function AdminUsersPage() {
                 <input type="password" required value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none" placeholder="Mínimo 6 caracteres" minLength={6} />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">WhatsApp (opcional)</label>
-                <input type="text" value={formData.whatsapp} onChange={e => setFormData({...formData, whatsapp: e.target.value})} className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none" placeholder="Ej. 573001234567" />
-              </div>
+              <WhatsAppField
+                label="WhatsApp (opcional)"
+                value={formData.whatsapp}
+                onChange={(v) => setFormData({ ...formData, whatsapp: v })}
+              />
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -432,11 +434,12 @@ export default function AdminUsersPage() {
                 <input type="text" required value={formData.displayName} onChange={e => setFormData({...formData, displayName: e.target.value})} className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none" placeholder="Ej. Juan Pérez" />
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Teléfono (WhatsApp)</label>
-                <input type="text" value={formData.whatsapp} onChange={e => setFormData({...formData, whatsapp: e.target.value})} className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none" placeholder="Ej. 573001234567" />
-              </div>
-              
+              <WhatsAppField
+                label="Teléfono (WhatsApp)"
+                value={formData.whatsapp}
+                onChange={(v) => setFormData({ ...formData, whatsapp: v })}
+              />
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Rol</label>

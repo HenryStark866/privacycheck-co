@@ -211,6 +211,30 @@ export async function canManageCompany(uid: string, companyId: string): Promise<
   return m?.role === 'administrador';
 }
 
+// ─── Trazabilidad de uso ─────────────────────────────────────────────────────
+
+/**
+ * Registra un evento de uso en la colección `activity_log` con fecha/hora real
+ * del servidor. Falla en silencio para no romper la operación principal.
+ */
+export async function logActivity(
+  uid: string,
+  action: string,
+  meta: Record<string, unknown> = {},
+) {
+  try {
+    await adminDb.collection('activity_log').add({
+      uid,
+      action,
+      meta,
+      at: FieldValue.serverTimestamp(),
+      atISO: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.warn('[activity_log] no se pudo registrar:', (err as Error)?.message);
+  }
+}
+
 // ─── Evaluations ─────────────────────────────────────────────────────────────
 
 export async function createEvaluation(data: { companyId: string; createdBy: string }): Promise<string> {

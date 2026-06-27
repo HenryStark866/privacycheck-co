@@ -6,6 +6,7 @@ import {
   Save, MessageSquare, HelpCircle, RefreshCw, Terminal,
   Users, Send, Wifi, WifiOff,
 } from 'lucide-react';
+import LiveClock from '@/components/LiveClock';
 
 interface WASession {
   id: string;
@@ -30,6 +31,7 @@ export default function WhatsAppPage() {
   const [saveLoading, setSaveLoading] = useState(false);
   const [error, setError]             = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [adminUpdatedAt, setAdminUpdatedAt] = useState<string | null>(null);
   const [sendTo, setSendTo]           = useState('');
   const [sendText, setSendText]       = useState('');
   const [sendLoading, setSendLoading] = useState(false);
@@ -48,7 +50,7 @@ export default function WhatsAppPage() {
       setSession(statusData.session);
       setError(null);
 
-      if (numRes.ok) setAdminNumber((await numRes.json()).adminNumber ?? '');
+      if (numRes.ok) { const nd = await numRes.json(); setAdminNumber(nd.adminNumber ?? ''); setAdminUpdatedAt(nd.updatedAt ?? null); }
       if (usersRes.ok) setUsers((await usersRes.json()).users ?? []);
     } catch (err: any) {
       setError(err.message || 'El servidor OpenWA no responde.');
@@ -74,7 +76,12 @@ export default function WhatsAppPage() {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ adminNumber }),
     });
-    if (res.ok) { setSaveSuccess(true); setTimeout(() => setSaveSuccess(false), 3000); }
+    if (res.ok) {
+      const d = await res.json().catch(() => ({}));
+      if (d.updatedAt) setAdminUpdatedAt(d.updatedAt);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    }
     setSaveLoading(false);
   };
 
@@ -175,6 +182,9 @@ export default function WhatsAppPage() {
                       {session.phoneNumber && (
                         <p className="text-xs font-semibold text-green-900 mt-1">Número vinculado: +{session.phoneNumber}</p>
                       )}
+                      <p className="text-[11px] text-green-700/90 mt-1.5">
+                        <LiveClock />
+                      </p>
                     </div>
                   </div>
                 ) : session?.status === 'SCAN_QR' ? (
@@ -295,22 +305,32 @@ export default function WhatsAppPage() {
                   <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-widest block mb-1.5">
                     Número con acceso total
                   </label>
-                  <input
-                    type="text" value={adminNumber} onChange={(e) => setAdminNumber(e.target.value)}
-                    placeholder="573001234567"
-                    className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:border-brand-500"
-                  />
-                  <p className="text-[10px] text-gray-400 mt-1">Con código de país sin +. Este número ve TODAS las empresas.</p>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium select-none">+57</span>
+                    <input
+                      type="tel"
+                      value={adminNumber.length === 12 && adminNumber.startsWith('57') ? adminNumber.slice(2) : adminNumber}
+                      onChange={(e) => setAdminNumber('57' + e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      placeholder="324 576 9748"
+                      className="w-full text-sm border border-slate-200 rounded-xl pl-12 pr-3 py-2.5 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-500/20 transition-all"
+                    />
+                  </div>
+                  <p className="text-[10px] text-gray-400 mt-1">Este número tiene acceso total: ve TODAS las empresas desde WhatsApp.</p>
                 </div>
                 <button
                   type="submit" disabled={saveLoading}
                   className="w-full flex items-center justify-center gap-1.5 bg-gray-800 hover:bg-gray-900 text-white text-xs font-semibold rounded-xl py-2.5 transition-all disabled:opacity-40"
                 >
                   {saveLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                  Guardar
+                  Guardar y actualizar
                 </button>
                 {saveSuccess && (
-                  <p className="text-[11px] text-green-600 bg-green-50 text-center py-1.5 rounded-lg font-semibold">✓ Guardado</p>
+                  <p className="text-[11px] text-green-600 bg-green-50 text-center py-1.5 rounded-lg font-semibold">✓ Número admin actualizado</p>
+                )}
+                {adminUpdatedAt && (
+                  <p className="text-[10px] text-slate-400 text-center flex items-center justify-center gap-1">
+                    Última actualización: {new Date(adminUpdatedAt).toLocaleString('es-CO')}
+                  </p>
                 )}
               </form>
             </div>
