@@ -213,7 +213,7 @@ export default function ResultsPage() {
 
       {/* Simulador What-If */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6">
-        <WhatIfSimulator answers={answers} gaps={gaps} />
+        <WhatIfSimulator answers={answers} currentScore={score} gaps={gaps} />
       </div>
 
       {/* Plan de acción IA */}
