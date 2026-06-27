@@ -6,19 +6,19 @@ export const metadata: Metadata = {
   title: 'PrivacyCheck CO · Autodiagnóstico Ley 1581',
   description: 'Evalúa el cumplimiento de tu organización con la Ley 1581 de 2012. Herramienta gratuita con IA para PYMES colombianas. Desarrollado para CAVALTEC · Sintaxis TI.',
   icons: {
-    icon: '/logocalvaltac.png',
-    shortcut: '/logocalvaltac.png',
-    apple: '/logocalvaltac.png',
+    icon: '/icon-cavaltec.png',
+    shortcut: '/icon-cavaltec.png',
+    apple: '/icon-cavaltec.png',
   },
   openGraph: {
     title: 'PrivacyCheck CO · Autodiagnóstico Ley 1581',
     description: 'Evalúa el cumplimiento de tu organización con la Ley 1581 de 2012. Herramienta gratuita con IA para PYMES colombianas.',
-    images: [{ url: '/logocalvaltac.png', width: 400, height: 400, alt: 'PrivacyCheck CO' }],
+    images: [{ url: '/logo-cavaltec.jpeg', width: 400, height: 400, alt: 'PrivacyCheck CO' }],
     type: 'website',
   },
   twitter: {
     card: 'summary',
-    images: ['/logocalvaltac.png'],
+    images: ['/logo-cavaltec.jpeg'],
   },
 };
 

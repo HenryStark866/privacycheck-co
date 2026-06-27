@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, Clock, ArrowRight, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CheckCircle2, Clock, ArrowRight, Search, ChevronLeft, ChevronRight, AlertCircle } from 'lucide-react';
 import MaturityBadge from '@/components/MaturityBadge';
 import type { MaturityLevel } from '@/lib/scoring';
 import { formatDate } from '@/lib/utils';
@@ -69,24 +69,24 @@ export default function DashboardList({
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-center gap-3">
         {/* Search */}
-        <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-400 pointer-events-none drop-shadow-[0_0_5px_rgba(45,212,191,0.5)]" />
           <input
             type="search"
-            placeholder="Buscar por empresa o estado…"
+            placeholder="Buscar por entidad o estado..."
             value={query}
             onChange={(e) => handleQuery(e.target.value)}
-            className="w-full bg-white border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400
-                       focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 transition-all"
+            className="w-full bg-slate-900/50 border border-white/10 rounded-xl pl-10 pr-10 py-2.5 text-sm text-white placeholder-slate-400
+                       focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 focus:shadow-[0_0_15px_rgba(45,212,191,0.2)] transition-all glass-card"
           />
           {query && (
             <button
               onClick={() => handleQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 transition-colors text-lg leading-none"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors p-1"
             >
               ×
             </button>
@@ -94,17 +94,17 @@ export default function DashboardList({
         </div>
 
         {/* Per-page selector */}
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="text-xs text-gray-400 whitespace-nowrap hidden sm:block">Registros por página</span>
+        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+          <span className="text-[11px] font-medium text-slate-400 uppercase tracking-widest hidden sm:block">Límite</span>
           <select
             value={perPage}
             onChange={(e) => handlePerPage(Number(e.target.value))}
-            className="bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700
-                       focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400
-                       transition-all appearance-none pr-7 cursor-pointer"
+            className="bg-slate-900/50 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-slate-300
+                       focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500
+                       transition-all appearance-none cursor-pointer glass-card min-w-[70px] text-center"
           >
             {PER_PAGE_OPTIONS.map((n) => (
-              <option key={n} value={n}>{n}</option>
+              <option key={n} value={n} className="bg-slate-900">{n}</option>
             ))}
           </select>
         </div>
@@ -112,20 +112,21 @@ export default function DashboardList({
 
       {/* Results meta */}
       {query && (
-        <p className="text-xs text-gray-400 px-1">
+        <p className="text-[11px] text-brand-400 px-1 font-medium tracking-wide">
           {filtered.length === 0
-            ? 'Sin resultados para esa búsqueda.'
-            : `${filtered.length} resultado${filtered.length !== 1 ? 's' : ''} para "${query}"`}
+            ? 'CERO COINCIDENCIAS EN LA BASE DE DATOS'
+            : `${filtered.length} REGISTRO${filtered.length !== 1 ? 'S' : ''} ENCONTRADO${filtered.length !== 1 ? 'S' : ''}`}
         </p>
       )}
 
       {/* List */}
       {slice.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-dashed border-gray-200 py-10 text-center">
-          <p className="text-sm text-gray-400">Sin resultados para esa búsqueda.</p>
+        <div className="glass-card rounded-2xl border border-dashed border-white/10 py-12 text-center flex flex-col items-center">
+          <AlertCircle className="w-8 h-8 text-slate-500 mb-3 opacity-50" />
+          <p className="text-sm text-slate-400">Sin resultados para los parámetros indicados.</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {slice.map((ev) => {
             const company = companyMap[ev.companyId];
             const date = ev.completedAt ?? ev.createdAt;
@@ -134,43 +135,54 @@ export default function DashboardList({
               <Link
                 key={ev.id}
                 href={isComplete ? `/evaluations/${ev.id}/results` : `/evaluations/${ev.id}/diagnose`}
-                className="flex items-center justify-between p-4 bg-white rounded-2xl border border-gray-100 shadow-card
-                           hover:shadow-card-hover hover:border-brand-200/60 transition-all duration-200 group"
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-900/40 rounded-2xl border border-white/5 shadow-card
+                           hover:bg-slate-800/60 hover:border-brand-500/30 hover:shadow-glow transition-all duration-300 group backdrop-blur-md"
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
-                    isComplete ? 'bg-brand-50' : 'bg-amber-50'
+                <div className="flex items-center gap-4 min-w-0 mb-3 sm:mb-0">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
+                    isComplete ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-brand-500/10 border-brand-500/20'
                   }`}>
                     {isComplete
-                      ? <CheckCircle2 className="w-4 h-4 text-brand-600" />
-                      : <Clock className="w-4 h-4 text-amber-500" />
+                      ? <CheckCircle2 className="w-5 h-5 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                      : <Clock className="w-5 h-5 text-brand-400 drop-shadow-[0_0_8px_rgba(45,212,191,0.8)]" />
                     }
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 leading-tight truncate">
-                      {company?.name ?? 'Empresa'}
+                    <p className="text-base font-semibold text-white leading-tight truncate group-hover:text-brand-300 transition-colors">
+                      {company?.name ?? 'Entidad No Identificada'}
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5">
-                      {isComplete
-                        ? `Completado ${formatDate(date as any)}`
-                        : `Borrador · ${formatDate(ev.createdAt as any)}`}
+                    <p className="text-[11px] text-slate-400 mt-1 uppercase tracking-wider font-medium flex items-center gap-1.5">
+                      {isComplete ? (
+                        <>
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          Certificado el {formatDate(date as any)}
+                        </>
+                      ) : (
+                        <>
+                          <span className="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
+                          Evaluación activa · Iniciada el {formatDate(ev.createdAt as any)}
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 shrink-0 ml-4">
+                <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 sm:ml-4">
                   {isComplete && ev.score != null ? (
-                    <>
-                      <span className="text-2xl font-bold text-gray-900 tabular-nums">
-                        {Math.round(ev.score)}%
-                      </span>
+                    <div className="flex items-center gap-3">
+                      <div className="flex flex-col items-end">
+                        <span className="text-sm text-slate-400 font-medium tracking-wide">Índice</span>
+                        <span className="text-xl font-bold text-white tabular-nums text-glow">
+                          {Math.round(ev.score)}%
+                        </span>
+                      </div>
                       <MaturityBadge level={ev.maturity as MaturityLevel} />
-                    </>
+                    </div>
                   ) : (
-                    <span className="text-xs text-amber-600 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-full font-medium">
-                      En progreso
+                    <span className="text-[10px] text-brand-300 bg-brand-900/30 border border-brand-500/30 px-3 py-1.5 rounded-full font-bold uppercase tracking-widest backdrop-blur shadow-[0_0_10px_rgba(45,212,191,0.15)]">
+                      Procesando
                     </span>
                   )}
-                  <ArrowRight className="w-4 h-4 text-gray-300 group-hover:text-brand-400 transition-colors" />
+                  <ArrowRight className="w-5 h-5 text-slate-600 group-hover:text-brand-400 group-hover:translate-x-1 transition-all duration-300" />
                 </div>
               </Link>
             );
@@ -180,12 +192,11 @@ export default function DashboardList({
 
       {/* Pagination footer */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-1">
-          <p className="text-xs text-gray-400">
-            {filtered.length} registro{filtered.length !== 1 ? 's' : ''} ·{' '}
-            página {safePage} de {totalPages}
+        <div className="flex items-center justify-between pt-3 border-t border-white/10 mt-4">
+          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-widest">
+            {filtered.length} Total · Pág {safePage}/{totalPages}
           </p>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <PagButton
               onClick={() => setPage(1)}
               disabled={safePage === 1}
@@ -195,20 +206,20 @@ export default function DashboardList({
             <PagButton
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={safePage === 1}
-              label={<ChevronLeft className="w-3.5 h-3.5" />}
+              label={<ChevronLeft className="w-4 h-4" />}
               title="Página anterior"
             />
             {getPages(safePage, totalPages).map((p, i) =>
               p === '…' ? (
-                <span key={`ellipsis-${i}`} className="px-1 text-xs text-gray-300 select-none">…</span>
+                <span key={`ellipsis-${i}`} className="px-1 text-xs text-slate-600 select-none">…</span>
               ) : (
                 <button
                   key={p}
                   onClick={() => setPage(p as number)}
-                  className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
+                  className={`w-8 h-8 rounded-lg text-[13px] font-medium transition-all ${
                     p === safePage
-                      ? 'bg-brand-600 text-white shadow-sm'
-                      : 'text-gray-500 hover:bg-gray-100'
+                      ? 'bg-brand-500/20 text-brand-300 border border-brand-500/50 shadow-[0_0_10px_rgba(45,212,191,0.2)]'
+                      : 'text-slate-400 hover:bg-white/10 hover:text-white border border-transparent'
                   }`}
                 >
                   {p}
@@ -218,7 +229,7 @@ export default function DashboardList({
             <PagButton
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={safePage === totalPages}
-              label={<ChevronRight className="w-3.5 h-3.5" />}
+              label={<ChevronRight className="w-4 h-4" />}
               title="Página siguiente"
             />
             <PagButton
@@ -233,8 +244,8 @@ export default function DashboardList({
 
       {/* Footer when no pagination */}
       {totalPages === 1 && filtered.length > 0 && (
-        <p className="text-xs text-gray-400 px-1 pt-1 text-right">
-          {filtered.length} registro{filtered.length !== 1 ? 's' : ''}
+        <p className="text-[11px] font-medium text-slate-500 uppercase tracking-widest text-right pt-2">
+          {filtered.length} REGISTRO{filtered.length !== 1 ? 'S' : ''} TOTAL
         </p>
       )}
     </div>
@@ -254,8 +265,8 @@ function PagButton({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className="w-8 h-8 rounded-lg text-xs font-medium text-gray-500 hover:bg-gray-100
-                 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center"
+      className="w-8 h-8 rounded-lg text-sm font-medium text-slate-400 hover:bg-white/10 hover:text-white border border-transparent
+                 disabled:opacity-20 disabled:cursor-not-allowed transition-all flex items-center justify-center bg-white/5"
     >
       {label}
     </button>
@@ -276,10 +287,11 @@ function getPages(current: number, total: number): (number | '…')[] {
 
 function EmptyState() {
   return (
-    <div className="bg-white border-2 border-dashed border-gray-200 rounded-2xl p-12 text-center">
-      <p className="text-gray-500 text-sm font-medium">Sin diagnósticos aún</p>
-      <p className="text-sm text-gray-400 mt-1">
-        Registra una empresa y realiza tu primer diagnóstico para ver resultados aquí.
+    <div className="glass-card border border-dashed border-white/10 rounded-2xl p-12 text-center flex flex-col items-center">
+      <AlertCircle className="w-12 h-12 text-slate-600 mb-4 opacity-50" />
+      <p className="text-white text-base font-semibold tracking-wide">Módulo sin Inicializar</p>
+      <p className="text-sm text-slate-400 mt-2 max-w-md font-light">
+        Registre la primera entidad e inicie un ciclo de auditoría para recolectar telemetría en este espacio.
       </p>
     </div>
   );

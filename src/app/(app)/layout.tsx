@@ -41,7 +41,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div className="px-5 pt-3 pb-2 flex flex-col gap-1.5 opacity-40 hover:opacity-100 transition-opacity duration-300">
           <span className="text-[8px] text-slate-500 uppercase tracking-widest font-bold">Infraestructura</span>
           <Image
-            src="/logocalvaltac.png"
+            src="/logo-cavaltec.jpeg"
             alt="Sintaxis TI"
             width={60}
             height={60}

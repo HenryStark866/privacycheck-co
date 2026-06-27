@@ -73,7 +73,7 @@ export default function LoginContent() {
 
       <header className="relative z-10 flex items-center gap-3 px-8 py-6">
         <div className="flex items-center justify-center w-9 h-9 rounded-xl overflow-hidden glass-card shadow-sm border border-white/10">
-          <Image src="/logocalvaltac.png" alt="Logo" width={36} height={36} className="w-7 h-7 object-contain" />
+          <Image src="/icon-cavaltec.png" alt="Logo" width={36} height={36} className="w-7 h-7 object-contain" />
         </div>
         <span className="text-white font-semibold text-sm tracking-widest uppercase">PrivacyCheck CO</span>
         <span className="text-[10px] text-brand-300 border border-brand-500/30 rounded-full px-2.5 py-0.5 ml-1 bg-brand-900/40 backdrop-blur tracking-widest uppercase">Beta</span>
@@ -98,7 +98,7 @@ export default function LoginContent() {
           <div className="glass-card rounded-[2rem] p-8 shadow-floating">
             <div className="text-center mb-8">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-800/50 border border-white/10 mb-5 overflow-hidden shadow-inner">
-                <Image src="/logocalvaltac.png" alt="Logo" width={48} height={48} className="w-10 h-10 object-contain drop-shadow-md" />
+                <Image src="/icon-cavaltec.png" alt="Logo" width={48} height={48} className="w-10 h-10 object-contain drop-shadow-md" />
               </div>
               <h2 className="text-2xl font-semibold text-white tracking-tight">Iniciar sesión</h2>
               <p className="text-sm text-slate-400 mt-2 font-light">Acceso seguro a la plataforma</p>
@@ -163,7 +163,7 @@ export default function LoginContent() {
           <p className="text-slate-500 text-[11px] tracking-widest uppercase font-medium">© 2026 PrivacyCheck CO · Core System</p>
           <div className="flex items-center gap-3 opacity-40 hover:opacity-100 transition-opacity duration-300">
             <span className="text-slate-400 text-[9px] uppercase tracking-[0.2em] font-bold">Powered by</span>
-            <Image src="/logocalvaltac.png" alt="Sintaxis TI" width={72} height={72} className="h-6 w-auto brightness-200 contrast-150" />
+            <Image src="/logo-cavaltec.jpeg" alt="Sintaxis TI" width={72} height={72} className="h-6 w-auto brightness-200 contrast-150" />
           </div>
         </div>
       </footer>

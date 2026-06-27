@@ -10,22 +10,28 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          50:  '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
+          50:  '#f0fdfa',
+          100: '#ccfbf1',
+          200: '#99f6e4',
+          300: '#5eead4',
+          400: '#2dd4bf',
+          500: '#14b8a6', // Cyan/Teal accent
+          600: '#0d9488',
+          700: '#0f766e',
+          800: '#115e59',
+          900: '#134e4a',
         },
         navy: {
-          700: '#0f2040',
-          800: '#0d1a33',
-          900: '#0b1427',
-          950: '#060d1a',
+          700: '#1e293b', // Slate 800
+          800: '#0f172a', // Slate 900
+          900: '#020617', // Slate 950
+          950: '#000000',
+        },
+        surface: {
+          50:  'rgba(255,255,255,0.02)',
+          100: 'rgba(255,255,255,0.05)',
+          200: 'rgba(255,255,255,0.1)',
+          300: 'rgba(255,255,255,0.15)',
         },
         success: {
           50:  '#f0fdf4',
@@ -48,23 +54,37 @@ const config: Config = {
       },
       fontFamily: {
         sans: [
+          'Inter',
           '-apple-system',
           'BlinkMacSystemFont',
           'SF Pro Display',
-          'Inter',
           'system-ui',
           'sans-serif',
         ],
       },
       boxShadow: {
-        card:        '0 1px 3px 0 rgb(0 0 0 / 0.04), 0 4px 16px -2px rgb(0 0 0 / 0.08)',
-        'card-hover':'0 4px 6px -1px rgb(0 0 0 / 0.06), 0 10px 32px -4px rgb(0 0 0 / 0.12)',
-        floating:    '0 20px 60px -12px rgb(0 0 0 / 0.35)',
+        card:        '0 1px 3px 0 rgba(0,0,0,0.4), 0 4px 16px -2px rgba(0,0,0,0.5)',
+        'card-hover':'0 4px 6px -1px rgba(0,0,0,0.5), 0 10px 32px -4px rgba(0,0,0,0.6), 0 0 15px rgba(45, 212, 191, 0.2)',
+        floating:    '0 20px 60px -12px rgba(0,0,0,0.7)',
+        glow:        '0 0 20px rgba(45, 212, 191, 0.4)',
       },
       borderRadius: {
         '2xl': '1rem',
         '3xl': '1.5rem',
       },
+      backgroundImage: {
+        'grid-pattern': `linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px)`,
+      },
+      animation: {
+        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'float': 'float 6s ease-in-out infinite',
+      },
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        }
+      }
     },
   },
   plugins: [],
