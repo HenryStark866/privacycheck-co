@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { verifySession } from '@/lib/firebase/session';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Shield, LayoutDashboard, Building2, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, Building2, MessageSquare } from 'lucide-react';
 import LogoutButton from '@/components/LogoutButton';
 import AIChat from '@/components/AIChat';
 
@@ -20,8 +20,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       <aside className="w-[232px] shrink-0 bg-white/80 backdrop-blur border-r border-gray-200/80 flex flex-col sticky top-0 h-screen">
         {/* Logo */}
         <div className="flex items-center gap-2.5 px-5 py-5 border-b border-gray-100">
-          <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-brand-600 shadow-sm">
-            <Shield className="w-4.5 h-4.5 text-white" />
+          <div className="flex items-center justify-center w-9 h-9 rounded-xl overflow-hidden bg-white border border-gray-100 shadow-sm shrink-0">
+            <Image src="/logocalvaltac.png" alt="PrivacyCheck CO" width={36} height={36} className="w-7 h-7 object-contain" />
           </div>
           <div>
             <p className="text-sm font-bold text-gray-900 leading-tight tracking-tight">PrivacyCheck CO</p>
@@ -45,7 +45,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             alt="Sintaxis TI"
             width={60}
             height={60}
-            className="h-5 w-auto grayscale"
+            className="h-5 w-auto"
           />
         </div>
 
