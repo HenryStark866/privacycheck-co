@@ -129,7 +129,7 @@ export async function getWhatsAppStatus(): Promise<WhatsAppSession> {
       id: 'mock-session-hackathon',
       name: SESSION_NAME,
       status: 'CONNECTED',
-      phoneNumber: '573000000000',
+      phoneNumber: process.env.ADMIN_WHATSAPP_NUMBER || '573245769748',
     };
   }
 }
