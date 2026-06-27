@@ -11,10 +11,10 @@ interface Props {
 }
 
 export default function Gauge({ score, maturity, animated = true }: Props) {
-  const needleRef = useRef<SVGLineElement>(null);
+  const needleRef = useRef<SVGGElement>(null);
 
   // Convertir score a ángulo: -90° (0%) → +90° (100%)
-  const angle = -90 + (score / 100) * 180;
+  const angle = -90 + (Math.max(0, Math.min(100, score)) / 100) * 180;
 
   useEffect(() => {
     if (!animated || !needleRef.current) return;
@@ -41,12 +41,12 @@ export default function Gauge({ score, maturity, animated = true }: Props) {
     { from: 72.6, to: 90,   color: '#22c55e' },   // 95–100% Líder
   ];
 
-  const needleX = cx + (r - 20) * Math.cos(((angle - 90) * Math.PI) / 180);
-  const needleY = cy + (r - 20) * Math.sin(((angle - 90) * Math.PI) / 180);
-
   return (
-    <div className="flex flex-col items-center gap-4">
-      <svg viewBox="0 0 300 160" className="w-full max-w-sm">
+    <div className="flex flex-col items-center gap-2 w-full">
+      {/* El SVG solo contiene el arco + aguja + etiquetas de extremos.
+          El número y la descripción van como HTML debajo, así nunca se
+          solapan ni se recortan en ningún navegador. viewBox ajustado. */}
+      <svg viewBox="0 0 300 164" className="w-full max-w-[340px] h-auto" role="img" aria-label={`Puntaje ${Math.round(score)}%`}>
         {/* Pista base */}
         <path d={arcPath(-90, 90)} fill="none" stroke="#e5e7eb" strokeWidth={18} strokeLinecap="round" />
 
@@ -57,28 +57,28 @@ export default function Gauge({ score, maturity, animated = true }: Props) {
         ))}
 
         {/* Aguja */}
-        <g style={{ transformOrigin: `${cx}px ${cy}px`, transform: `rotate(${angle}deg)` }}
-           ref={needleRef as React.RefObject<SVGGElement>}>
+        <g style={{ transformOrigin: `${cx}px ${cy}px`, transform: `rotate(${angle}deg)` }} ref={needleRef}>
           <line x1={cx} y1={cy} x2={cx} y2={cy - r + 22}
-            stroke="#1e293b" strokeWidth={3} strokeLinecap="round" />
+            stroke="#1e293b" strokeWidth={3.5} strokeLinecap="round" />
         </g>
 
         {/* Centro */}
-        <circle cx={cx} cy={cy} r={8} fill="#1e293b" />
+        <circle cx={cx} cy={cy} r={9} fill="#1e293b" />
+        <circle cx={cx} cy={cy} r={4} fill="#fff" />
 
-        {/* Etiquetas */}
-        <text x={cx - r - 6} y={cy + 18} fontSize={11} fill="#6b7280" textAnchor="middle">0%</text>
-        <text x={cx + r + 6} y={cy + 18} fontSize={11} fill="#6b7280" textAnchor="middle">100%</text>
-        <text x={cx} y={cy - r - 8}       fontSize={11} fill="#6b7280" textAnchor="middle">50%</text>
-
-        {/* Puntaje central */}
-        <text x={cx} y={cy + 32} fontSize={28} fontWeight="700" fill="#0f172a" textAnchor="middle">
-          {Math.round(score)}%
-        </text>
-        <text x={cx} y={cy + 50} fontSize={11} fill="#64748b" textAnchor="middle">
-          Cumplimiento Ley 1581
-        </text>
+        {/* Etiquetas de extremos */}
+        <text x={cx - r} y={cy + 22} fontSize={12} fill="#94a3b8" textAnchor="middle">0%</text>
+        <text x={cx + r} y={cy + 22} fontSize={12} fill="#94a3b8" textAnchor="middle">100%</text>
+        <text x={cx} y={cy - r - 8} fontSize={12} fill="#94a3b8" textAnchor="middle">50%</text>
       </svg>
+
+      {/* Número + descripción (HTML, sin riesgo de solape) */}
+      <div className="flex flex-col items-center -mt-1">
+        <span className="text-4xl sm:text-5xl font-bold text-slate-900 tabular-nums leading-none tracking-tight">
+          {Math.round(score)}%
+        </span>
+        <span className="text-xs text-slate-500 mt-1.5">Cumplimiento Ley 1581</span>
+      </div>
 
       <MaturityBadge level={maturity} showDesc size="lg" />
     </div>

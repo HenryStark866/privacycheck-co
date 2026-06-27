@@ -5,7 +5,6 @@
  */
 import { NextResponse } from 'next/server';
 import { verifySession } from '@/lib/firebase/session';
-import { getFallbackResponse } from '@/lib/ai/chat-fallback';
 
 const SYSTEM_INSTRUCTION = `Eres un asesor experto en protección de datos personales en Colombia, especializado estrictamente en la Ley 1581 de 2012 y sus decretos reglamentarios (Decreto 1377 de 2013, Decreto 1074 de 2015).
 Tu rol es ayudar a organizaciones a entender sus obligaciones legales, interpretar su diagnóstico de cumplimiento y orientarlas para cerrar brechas.
@@ -83,9 +82,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'messages requerido' }, { status: 400 });
   }
 
-  const lastUserMessage = messages.filter((m) => m.role === 'user').at(-1)?.content ?? '';
-
-  // Intentar Gemini primero
+  // Conectar directamente con Google Gemini
   try {
     const geminiText = await callGemini(messages);
     if (geminiText) {
@@ -95,7 +92,9 @@ export async function POST(request: Request) {
     console.error('Gemini call failed:', err);
   }
 
-  // Fallback con reglas (siempre funciona, sin API key)
-  const fallback = getFallbackResponse(lastUserMessage);
-  return NextResponse.json({ content: fallback, source: 'fallback' });
+  // Sin respuesta fabricada: mensaje honesto (nunca plantillas genéricas).
+  return NextResponse.json({
+    content: 'En este momento no puedo conectarme con el asistente de IA. Por favor intenta de nuevo en unos segundos.',
+    source: 'unavailable',
+  });
 }
