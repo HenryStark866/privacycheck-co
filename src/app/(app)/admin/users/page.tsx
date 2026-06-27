@@ -381,7 +381,7 @@ export default function AdminUsersPage() {
                 onChange={(v) => setFormData({ ...formData, whatsapp: v })}
               />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Rol</label>
                   <select value={formData.systemRole} onChange={e => setFormData({...formData, systemRole: e.target.value})} className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 focus:border-brand-500 outline-none bg-white font-semibold text-slate-700">
@@ -440,7 +440,7 @@ export default function AdminUsersPage() {
                 onChange={(v) => setFormData({ ...formData, whatsapp: v })}
               />
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Rol</label>
                   <select value={formData.systemRole === 'user' ? 'empresa' : formData.systemRole} onChange={e => setFormData({...formData, systemRole: e.target.value})} className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 focus:border-brand-500 outline-none bg-white font-semibold text-slate-700">

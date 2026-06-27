@@ -73,7 +73,7 @@ export default function NewCompanyPage() {
       {/* Form card */}
       <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-gray-100 shadow-card p-8 space-y-6">
         {/* Grid 2 columnas */}
-        <div className="grid grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <Field label="Nombre o razón social *">
             <FilledInput
               type="text"

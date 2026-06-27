@@ -221,7 +221,7 @@ export default function CompanyManager({
               <Field label="NIT">
                 <input type="text" value={form.nit} onChange={(e) => setForm({ ...form, nit: e.target.value })} className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none" />
               </Field>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Sector">
                   <input type="text" value={form.sector} onChange={(e) => setForm({ ...form, sector: e.target.value })} className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none" />
                 </Field>
