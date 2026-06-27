@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { ShieldAlert, UserCheck, UserX, Trash2, Edit2, Plus, X, Loader2 } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { ShieldAlert, UserCheck, UserX, Trash2, Edit2, Plus, X, Loader2, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
 interface UserData {
@@ -18,6 +18,11 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Buscador + paginación
+  const [query, setQuery] = useState('');
+  const [perPage, setPerPage] = useState(10);
+  const [page, setPage] = useState(1);
 
   // Modals state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -158,6 +163,17 @@ export default function AdminUsersPage() {
     setIsEditModalOpen(true);
   }
 
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return users;
+    return users.filter((u) =>
+      [u.email, u.displayName, u.whatsapp, u.systemRole].some((v) => (v ?? '').toLowerCase().includes(q)),
+    );
+  }, [users, query]);
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+  const safePage = Math.min(page, totalPages);
+  const slice = filtered.slice((safePage - 1) * perPage, safePage * perPage);
+
   if (loading) {
     return <div className="p-8 text-center text-slate-500">Cargando usuarios...</div>;
   }
@@ -191,6 +207,30 @@ export default function AdminUsersPage() {
         </button>
       </div>
 
+      {/* Buscador + límite */}
+      <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+          <input
+            type="search"
+            placeholder="Buscar por nombre, correo, teléfono o rol…"
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+            className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 transition-all shadow-sm"
+          />
+        </div>
+        <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+          <span className="text-[11px] font-medium text-slate-500 uppercase tracking-widest hidden sm:block">Límite</span>
+          <select
+            value={perPage}
+            onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+            className="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-400 transition-all appearance-none cursor-pointer shadow-sm min-w-[70px] text-center"
+          >
+            {[5, 10, 25, 50].map((n) => <option key={n} value={n}>{n}</option>)}
+          </select>
+        </div>
+      </div>
+
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-600">
@@ -205,7 +245,7 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {users.map((u) => (
+              {slice.map((u) => (
                 <tr key={u.id} className="hover:bg-slate-50/50 transition-colors">
                   <td className="px-6 py-4">
                     <p className="font-medium text-slate-900">{u.displayName || 'Sin nombre'}</p>
@@ -260,10 +300,10 @@ export default function AdminUsersPage() {
                   </td>
                 </tr>
               ))}
-              {users.length === 0 && (
+              {filtered.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
-                    No hay usuarios registrados.
+                    {query ? 'Sin resultados para la búsqueda.' : 'No hay usuarios registrados.'}
                   </td>
                 </tr>
               )}
@@ -271,6 +311,32 @@ export default function AdminUsersPage() {
           </table>
         </div>
       </div>
+
+      {/* Paginación */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-1">
+          <p className="text-[11px] font-medium text-slate-500 uppercase tracking-widest">
+            {filtered.length} Usuario{filtered.length !== 1 ? 's' : ''} · Pág {safePage}/{totalPages}
+          </p>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={safePage === 1}
+              className="w-8 h-8 rounded-lg text-slate-500 hover:bg-slate-100 border border-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center bg-white shadow-sm"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-[13px] font-medium text-slate-600 px-2 tabular-nums">{safePage} / {totalPages}</span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={safePage === totalPages}
+              className="w-8 h-8 rounded-lg text-slate-500 hover:bg-slate-100 border border-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center justify-center bg-white shadow-sm"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* MODAL CREAR USUARIO */}
       {isAddModalOpen && (

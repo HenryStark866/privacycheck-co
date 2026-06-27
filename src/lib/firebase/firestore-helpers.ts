@@ -95,6 +95,30 @@ export async function createCompany(data: Omit<Company, 'id' | 'createdAt'>): Pr
   return ref.id;
 }
 
+export async function updateCompany(
+  id: string,
+  data: Partial<Pick<Company, 'name' | 'nit' | 'sector' | 'size'>>,
+) {
+  const clean: Record<string, unknown> = { updatedAt: FieldValue.serverTimestamp() };
+  (['name', 'nit', 'sector', 'size'] as const).forEach((k) => {
+    if (data[k] !== undefined) clean[k] = data[k];
+  });
+  await adminDb.collection('companies').doc(id).update(clean);
+}
+
+/** Borra la empresa y, en cascada, sus membresías y evaluaciones. */
+export async function deleteCompany(id: string) {
+  const [mems, evals] = await Promise.all([
+    adminDb.collection('memberships').where('companyId', '==', id).get(),
+    adminDb.collection('evaluations').where('companyId', '==', id).get(),
+  ]);
+  const batch = adminDb.batch();
+  mems.docs.forEach((d) => batch.delete(d.ref));
+  evals.docs.forEach((d) => batch.delete(d.ref));
+  batch.delete(adminDb.collection('companies').doc(id));
+  await batch.commit();
+}
+
 // ─── Memberships ─────────────────────────────────────────────────────────────
 
 /** ID compuesto para lookup O(1) sin índice */
@@ -120,6 +144,58 @@ export async function getMembersByCompany(companyId: string): Promise<Membership
     .where('companyId', '==', companyId)
     .get();
   return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Membership));
+}
+
+export async function deleteMembership(uid: string, companyId: string) {
+  await adminDb.collection('memberships').doc(`${uid}_${companyId}`).delete();
+}
+
+// ─── Users / permisos ────────────────────────────────────────────────────────
+
+export interface AppUser {
+  uid: string;
+  email: string;
+  displayName?: string;
+  systemRole?: string;
+  isApproved?: boolean;
+}
+
+export async function getSystemRole(uid: string): Promise<string> {
+  const snap = await adminDb.collection('users').doc(uid).get();
+  return (snap.data()?.systemRole as string) || 'user';
+}
+
+/** Busca un usuario por email (exacto y, si no, en minúsculas). */
+export async function getUserByEmail(email: string): Promise<AppUser | null> {
+  const raw = email.trim();
+  for (const value of [raw, raw.toLowerCase()]) {
+    const snap = await adminDb.collection('users').where('email', '==', value).limit(1).get();
+    if (!snap.empty) {
+      const d = snap.docs[0];
+      return { uid: d.id, ...d.data() } as AppUser;
+    }
+  }
+  return null;
+}
+
+/** Devuelve un mapa uid -> usuario para enriquecer listas de miembros. */
+export async function getUsersByIds(ids: string[]): Promise<Record<string, AppUser>> {
+  const unique = Array.from(new Set(ids)).filter(Boolean);
+  const map: Record<string, AppUser> = {};
+  await Promise.all(
+    unique.map(async (id) => {
+      const snap = await adminDb.collection('users').doc(id).get();
+      if (snap.exists) map[id] = { uid: id, ...snap.data() } as AppUser;
+    }),
+  );
+  return map;
+}
+
+/** ¿Puede gestionar la empresa? admin global o administrador de la empresa. */
+export async function canManageCompany(uid: string, companyId: string): Promise<boolean> {
+  if ((await getSystemRole(uid)) === 'admin') return true;
+  const m = await getMembership(uid, companyId);
+  return m?.role === 'administrador';
 }
 
 // ─── Evaluations ─────────────────────────────────────────────────────────────

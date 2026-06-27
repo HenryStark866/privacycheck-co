@@ -1,30 +1,46 @@
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronRight, Building2, Users, Clock } from 'lucide-react';
+import { ChevronRight, Building2, Clock, Crown } from 'lucide-react';
 import { verifySession } from '@/lib/firebase/session';
 import {
   getCompany, getMembership, getEvaluationsByCompany, getMembersByCompany,
+  getSystemRole, getUsersByIds,
 } from '@/lib/firebase/firestore-helpers';
 import MaturityBadge from '@/components/MaturityBadge';
 import type { MaturityLevel } from '@/lib/scoring';
 import { formatDate } from '@/lib/utils';
 import NewEvaluationButton from '@/components/NewEvaluationButton';
 import RNBDStatus from '@/components/RNBDStatus';
+import CompanyManager from '@/components/CompanyManager';
 
 export default async function CompanyDetailPage({ params }: { params: { id: string } }) {
   const user = await verifySession();
   if (!user) redirect('/login');
 
-  const [membership, company, evaluations, members] = await Promise.all([
+  const [systemRole, membership, company, evaluations, members] = await Promise.all([
+    getSystemRole(user.uid),
     getMembership(user.uid, params.id),
     getCompany(params.id),
     getEvaluationsByCompany(params.id),
     getMembersByCompany(params.id),
   ]);
 
-  if (!membership || !company) notFound();
+  const isAdmin = systemRole === 'admin';
+  // El admin global puede ver cualquier empresa aunque no sea miembro.
+  if (!company || (!membership && !isAdmin)) notFound();
 
-  const canEdit = ['administrador', 'evaluador'].includes(membership.role);
+  const effectiveRole = membership?.role ?? 'administrador';
+  const canManage = isAdmin || membership?.role === 'administrador';
+  const canEdit = canManage || membership?.role === 'evaluador';
+
+  // Enriquecer miembros con email/nombre
+  const userMap = await getUsersByIds(members.map((m) => m.userId));
+  const enrichedMembers = members.map((m) => ({
+    uid: m.userId,
+    role: m.role,
+    email: userMap[m.userId]?.email,
+    displayName: userMap[m.userId]?.displayName,
+  }));
 
   return (
     <div className="space-y-6">
@@ -44,9 +60,15 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-xs text-brand-700 bg-brand-50 border border-brand-100 rounded-full px-3 py-1.5 capitalize font-medium">
-            {membership.role}
-          </span>
+          {isAdmin && !membership ? (
+            <span className="flex items-center gap-1 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-3 py-1.5 font-medium">
+              <Crown className="w-3.5 h-3.5" /> Admin global
+            </span>
+          ) : (
+            <span className="text-xs text-brand-700 bg-brand-50 border border-brand-100 rounded-full px-3 py-1.5 capitalize font-medium">
+              {effectiveRole}
+            </span>
+          )}
           {canEdit && <NewEvaluationButton companyId={params.id} />}
         </div>
       </div>
@@ -105,22 +127,12 @@ export default async function CompanyDetailPage({ params }: { params: { id: stri
         />
       </section>
 
-      {/* Miembros */}
-      <section>
-        <h2 className="text-base font-semibold text-gray-900 mb-3 tracking-tight flex items-center gap-2">
-          <Users className="w-4 h-4 text-gray-400" /> Miembros
-        </h2>
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-card divide-y divide-gray-50">
-          {members.map((m) => (
-            <div key={m.id} className="flex items-center justify-between px-4 py-3">
-              <p className="text-xs font-mono text-gray-500">{m.userId}</p>
-              <span className="text-xs capitalize text-gray-400 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-full">
-                {m.role}
-              </span>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Asesores + gestión (editar/borrar/asignar) */}
+      <CompanyManager
+        company={{ id: params.id, name: company.name, nit: company.nit, sector: company.sector, size: company.size }}
+        members={enrichedMembers}
+        canManage={canManage}
+      />
     </div>
   );
 }
