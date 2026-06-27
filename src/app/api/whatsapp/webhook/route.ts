@@ -37,6 +37,11 @@ import {
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://privacycheck-co.vercel.app';
 
+// Grok / xAI (OpenAI-compatible). Si XAI_API_KEY está definida, el bot usa Grok
+// como motor principal y cae a Gemini si falla. Modelo configurable vía XAI_MODEL.
+const XAI_API_KEY = process.env.XAI_API_KEY || process.env.GROK_API_KEY;
+const XAI_MODEL = process.env.XAI_MODEL || 'grok-2-latest';
+
 // gemini-2.5-flash tiene cuota diaria propia (2.0-flash se agota antes;
 // 1.5-flash ya no existe en la API). Respaldo: flash-latest.
 const GEMINI_MODEL = 'gemini-2.5-flash';
@@ -172,7 +177,60 @@ async function geminiReply(prompt: string, context: string, userName: string): P
   }
 }
 
-/** Construye contexto enriquecido de Firestore para Gemini */
+/** Llama a Grok (xAI) — API compatible con OpenAI. Lanza si falla (para fallback). */
+async function grokReply(prompt: string, context: string, userName: string): Promise<string> {
+  if (!XAI_API_KEY) throw new Error('XAI_API_KEY no configurada');
+
+  const contextSection = context
+    ? `Información actual de las empresas del usuario en la plataforma:\n${context}\n\n`
+    : '';
+  const userContent = `${contextSection}Usuario: ${userName}\nConsulta: "${prompt}"`;
+
+  const res = await fetch('https://api.x.ai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${XAI_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: XAI_MODEL,
+      messages: [
+        { role: 'system', content: BOT_PERSONA },
+        { role: 'user', content: userContent },
+      ],
+      temperature: 0.35,
+      max_tokens: 600,
+      stream: false,
+    }),
+  });
+
+  if (!res.ok) {
+    const errBody = await res.text();
+    throw new Error(`Grok ${res.status}: ${errBody.slice(0, 200)}`);
+  }
+
+  const d = await res.json();
+  const text = d?.choices?.[0]?.message?.content?.trim();
+  if (!text) throw new Error('Grok devolvió respuesta vacía');
+  return text.includes('PrivacyCheck CO') ? text : `${text}\n\n_PrivacyCheck CO · Sintaxis TI_`;
+}
+
+/**
+ * Motor de IA del bot: usa Grok (xAI) si hay XAI_API_KEY, con respaldo automático
+ * a Gemini. Garantiza una respuesta siempre (Gemini ya degrada con texto estático).
+ */
+async function aiReply(prompt: string, context: string, userName: string): Promise<string> {
+  if (XAI_API_KEY) {
+    try {
+      return await grokReply(prompt, context, userName);
+    } catch (err) {
+      console.warn('[AI] Grok falló, usando Gemini:', (err as Error).message);
+    }
+  }
+  return geminiReply(prompt, context, userName);
+}
+
+/** Construye contexto enriquecido de Firestore para la IA */
 async function buildContext(companyIds?: string[]): Promise<string> {
   const compsSnap = await adminDb.collection('companies').get();
   const companies = companyIds
@@ -709,9 +767,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true, status: 'cmd_contacto' });
     }
 
-    // ── 3. Consulta libre → Gemini 2.0 Flash (gratuito) ─────────────────────
+    // ── 3. Consulta libre → IA (Grok si XAI_API_KEY, si no Gemini) ──────────
     const context = await buildContext(companyIds);
-    const reply = await geminiReply(body, context, greeting);
+    const reply = await aiReply(body, context, greeting);
     await sendWhatsAppMessage(sessionId, fromJid, reply);
 
     return NextResponse.json({ ok: true, status: 'ai_reply' });
