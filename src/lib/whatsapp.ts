@@ -184,8 +184,9 @@ export async function setupWhatsAppWebhook(sessionId: string, appUrl: string) {
  * @param text       Mensaje en texto plano (WhatsApp soporta *negrita*, _cursiva_)
  */
 export async function sendWhatsAppMessage(sessionId: string, to: string, text: string) {
+  const activeSession = sessionId || SESSION_NAME;
   const chatId = toChatId(to);
-  const res = await fetch(`${OPENWA_API_URL}/api/sessions/${sessionId}/messages/send-text`, {
+  const res = await fetch(`${OPENWA_API_URL}/api/sessions/${activeSession}/messages/send-text`, {
     method: 'POST',
     headers: headers(),
     body:    JSON.stringify({ chatId, text }),
