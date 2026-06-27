@@ -7,6 +7,8 @@ import MaturityBadge from '@/components/MaturityBadge';
 import type { MaturityLevel } from '@/lib/scoring';
 import { formatDate } from '@/lib/utils';
 
+import StartEvaluationModalButton from '@/components/StartEvaluationModalButton';
+
 function serializeTs(ts: any): string {
   if (!ts) return new Date().toISOString();
   if (typeof ts.toDate === 'function') return ts.toDate().toISOString();
@@ -23,6 +25,12 @@ export default async function EvaluationsPage() {
     getAllEvaluations(user.uid, systemRole),
     getCompaniesByUser(user.uid, systemRole),
   ]);
+
+  const plainCompanies = userCompanies.map((c) => ({
+    id: c.id,
+    name: c.name,
+    nit: c.nit ?? '',
+  }));
 
   const plainEvals = evaluations.map((ev) => ({
     id: ev.id,
@@ -51,14 +59,7 @@ export default async function EvaluationsPage() {
               : 'Gestión y seguimiento de diagnósticos de tus organizaciones'}
           </p>
         </div>
-        {userCompanies.length > 0 && (
-          <Link
-            href={`/companies/${userCompanies[0].id}`}
-            className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm"
-          >
-            <Plus className="w-4 h-4" /> Nuevo diagnóstico
-          </Link>
-        )}
+        <StartEvaluationModalButton companies={plainCompanies} />
       </div>
 
       {!plainEvals.length ? (
