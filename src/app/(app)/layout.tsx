@@ -3,7 +3,7 @@ import { verifySession } from '@/lib/firebase/session';
 import { adminDb } from '@/lib/firebase/admin';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Shield, LayoutDashboard, Building2, MessageSquare, Users } from 'lucide-react';
+import { Shield, LayoutDashboard, Building2, MessageSquare, Users, ClipboardCheck } from 'lucide-react';
 import LogoutButton from '@/components/LogoutButton';
 import AIChat from '@/components/AIChat';
 import CartoonBackground from '@/components/CartoonBackground';
@@ -45,6 +45,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <p className="text-[9px] font-bold text-slate-500 uppercase tracking-[0.15em] px-2 pt-2 pb-2">Sistema Central</p>
           <NavLink href="/dashboard" icon={<LayoutDashboard className="w-4 h-4" />}>Panel Principal</NavLink>
           <NavLink href="/companies" icon={<Building2 className="w-4 h-4" />}>Entidades</NavLink>
+          <NavLink href="/evaluations" icon={<ClipboardCheck className="w-4 h-4" />}>Diagnósticos</NavLink>
           <NavLink href="/whatsapp" icon={<MessageSquare className="w-4 h-4" />}>Gateway WhatsApp</NavLink>
           {systemRole === 'admin' && (
             <>

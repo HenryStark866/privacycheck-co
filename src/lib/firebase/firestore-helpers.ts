@@ -236,6 +236,22 @@ export async function getEvaluationsByCompany(companyId: string): Promise<Evalua
   return evals.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
 }
 
+export async function getAllEvaluations(uid: string, systemRole?: string): Promise<Array<Evaluation & { companyName?: string }>> {
+  const roleToUse = systemRole || (await getSystemRole(uid));
+  const userCompanies = await getCompaniesByUser(uid, roleToUse);
+  const companyMap = new Map(userCompanies.map(c => [c.id, c.name]));
+
+  const evalsSnap = await adminDb.collection('evaluations').get();
+  const evals = evalsSnap.docs
+    .map((d) => {
+      const data = d.data();
+      return { id: d.id, ...data, companyName: companyMap.get(data.companyId) || 'Empresa' } as Evaluation & { companyName?: string };
+    })
+    .filter((e) => roleToUse === 'admin' || companyMap.has(e.companyId));
+
+  return evals.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
+}
+
 export async function getEvaluation(id: string): Promise<Evaluation | null> {
   const docSnap = await adminDb.collection('evaluations').doc(id).get();
   if (!docSnap.exists) return null;
