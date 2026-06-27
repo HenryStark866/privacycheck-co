@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ShieldAlert, UserCheck, UserX, Trash2, Edit2, Plus } from 'lucide-react';
+import { ShieldAlert, UserCheck, UserX, Trash2, Edit2, Plus, X, Loader2 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
 interface UserData {
   id: string;
   email: string;
   displayName?: string;
+  whatsapp?: string;
   systemRole: string;
   isApproved: boolean;
   createdAt: string;
@@ -17,6 +18,16 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Modals state
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
+  
+  // Forms state
+  const [formData, setFormData] = useState({ email: '', password: '', displayName: '', whatsapp: '', systemRole: 'user', isApproved: true });
+  const [formLoading, setFormLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -83,6 +94,70 @@ export default function AdminUsersPage() {
     }
   }
 
+  async function handleAddUser(e: React.FormEvent) {
+    e.preventDefault();
+    setFormLoading(true);
+    setFormError(null);
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al crear usuario');
+      
+      setIsAddModalOpen(false);
+      setFormData({ email: '', password: '', displayName: '', whatsapp: '', systemRole: 'user', isApproved: true });
+      fetchUsers(); // Recargar lista
+    } catch (err: any) {
+      setFormError(err.message);
+    } finally {
+      setFormLoading(false);
+    }
+  }
+
+  async function handleEditUser(e: React.FormEvent) {
+    e.preventDefault();
+    if (!selectedUser) return;
+    setFormLoading(true);
+    setFormError(null);
+    try {
+      const res = await fetch(`/api/admin/users/${selectedUser.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          displayName: formData.displayName,
+          whatsapp: formData.whatsapp,
+          systemRole: formData.systemRole,
+          isApproved: formData.isApproved
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al editar usuario');
+      
+      setIsEditModalOpen(false);
+      fetchUsers(); // Recargar lista
+    } catch (err: any) {
+      setFormError(err.message);
+    } finally {
+      setFormLoading(false);
+    }
+  }
+
+  function openEditModal(user: UserData) {
+    setSelectedUser(user);
+    setFormData({
+      email: user.email,
+      password: '', // Password cannot be viewed, only changed if needed (we omit it for now)
+      displayName: user.displayName || '',
+      whatsapp: user.whatsapp || '',
+      systemRole: user.systemRole,
+      isApproved: user.isApproved
+    });
+    setIsEditModalOpen(true);
+  }
+
   if (loading) {
     return <div className="p-8 text-center text-slate-500">Cargando usuarios...</div>;
   }
@@ -97,12 +172,23 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Gestión de Usuarios</h1>
           <p className="text-gray-500 text-sm mt-0.5">Administra los accesos y roles del sistema.</p>
         </div>
+        <button 
+          onClick={() => {
+            setFormData({ email: '', password: '', displayName: '', whatsapp: '', systemRole: 'user', isApproved: true });
+            setFormError(null);
+            setIsAddModalOpen(true);
+          }}
+          className="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-colors shadow-sm"
+        >
+          <Plus className="w-4 h-4" />
+          Crear Usuario
+        </button>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -111,6 +197,7 @@ export default function AdminUsersPage() {
             <thead className="bg-slate-50 text-slate-500 uppercase text-xs font-semibold">
               <tr>
                 <th className="px-6 py-4">Usuario</th>
+                <th className="px-6 py-4">Teléfono</th>
                 <th className="px-6 py-4">Fecha Registro</th>
                 <th className="px-6 py-4">Rol</th>
                 <th className="px-6 py-4">Estado</th>
@@ -123,6 +210,9 @@ export default function AdminUsersPage() {
                   <td className="px-6 py-4">
                     <p className="font-medium text-slate-900">{u.displayName || 'Sin nombre'}</p>
                     <p className="text-xs text-slate-500">{u.email}</p>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-xs">
+                    {u.whatsapp || <span className="text-slate-400">N/A</span>}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {formatDate(u.createdAt as any)}
@@ -152,10 +242,17 @@ export default function AdminUsersPage() {
                       {u.isApproved ? 'Aprobado' : 'Pendiente'}
                     </button>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
+                  <td className="px-6 py-4 whitespace-nowrap text-right space-x-1">
+                    <button
+                      onClick={() => openEditModal(u)}
+                      className="p-2 text-slate-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors inline-flex"
+                      title="Editar usuario"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
                     <button
                       onClick={() => deleteUser(u.id)}
-                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors inline-flex"
                       title="Eliminar usuario"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -165,7 +262,7 @@ export default function AdminUsersPage() {
               ))}
               {users.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
                     No hay usuarios registrados.
                   </td>
                 </tr>
@@ -174,6 +271,101 @@ export default function AdminUsersPage() {
           </table>
         </div>
       </div>
+
+      {/* MODAL CREAR USUARIO */}
+      {isAddModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
+              <h2 className="text-lg font-bold text-slate-800">Crear nuevo usuario</h2>
+              <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:bg-slate-200 p-1 rounded-lg">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleAddUser} className="p-5 space-y-4">
+              {formError && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg border border-red-100">{formError}</div>}
+              
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Nombre completo</label>
+                <input type="text" required value={formData.displayName} onChange={e => setFormData({...formData, displayName: e.target.value})} className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none" placeholder="Ej. Juan Pérez" />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Correo electrónico</label>
+                <input type="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none" placeholder="correo@ejemplo.com" />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Contraseña</label>
+                <input type="password" required value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none" placeholder="Mínimo 6 caracteres" minLength={6} />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-2">
+                <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Cancelar</button>
+                <button type="submit" disabled={formLoading} className="flex items-center justify-center min-w-[100px] px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl transition-colors disabled:opacity-50">
+                  {formLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Crear'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL EDITAR USUARIO */}
+      {isEditModalOpen && selectedUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+            <div className="flex justify-between items-center p-5 border-b border-slate-100 bg-slate-50/50">
+              <h2 className="text-lg font-bold text-slate-800">Editar usuario</h2>
+              <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:bg-slate-200 p-1 rounded-lg">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleEditUser} className="p-5 space-y-4">
+              {formError && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-lg border border-red-100">{formError}</div>}
+              
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Correo (No editable)</label>
+                <input type="email" disabled value={formData.email} className="w-full text-sm border border-slate-200 bg-slate-50 text-slate-400 rounded-xl px-3 py-2.5 outline-none" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Nombre completo</label>
+                <input type="text" required value={formData.displayName} onChange={e => setFormData({...formData, displayName: e.target.value})} className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none" placeholder="Ej. Juan Pérez" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Teléfono (WhatsApp)</label>
+                <input type="text" value={formData.whatsapp} onChange={e => setFormData({...formData, whatsapp: e.target.value})} className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none" placeholder="Ej. 573001234567" />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Rol</label>
+                  <select value={formData.systemRole} onChange={e => setFormData({...formData, systemRole: e.target.value})} className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 focus:border-brand-500 outline-none bg-white">
+                    <option value="user">USER</option>
+                    <option value="admin">ADMIN</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-500 uppercase tracking-widest mb-1.5">Estado</label>
+                  <select value={formData.isApproved ? 'true' : 'false'} onChange={e => setFormData({...formData, isApproved: e.target.value === 'true'})} className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 focus:border-brand-500 outline-none bg-white">
+                    <option value="true">APROBADO</option>
+                    <option value="false">PENDIENTE</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-2">
+                <button type="button" onClick={() => setIsEditModalOpen(false)} className="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Cancelar</button>
+                <button type="submit" disabled={formLoading} className="flex items-center justify-center min-w-[100px] px-4 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 rounded-xl transition-colors disabled:opacity-50">
+                  {formLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Guardar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

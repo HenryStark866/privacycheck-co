@@ -16,12 +16,17 @@ export async function PATCH(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const { systemRole, isApproved } = await request.json();
+  const { systemRole, isApproved, displayName, whatsapp } = await request.json();
   const updateData: any = { updatedAt: FieldValue.serverTimestamp() };
   if (systemRole !== undefined) updateData.systemRole = systemRole;
   if (isApproved !== undefined) updateData.isApproved = isApproved;
+  if (displayName !== undefined) updateData.displayName = displayName;
+  if (whatsapp !== undefined) updateData.whatsapp = whatsapp;
 
   try {
+    if (displayName !== undefined) {
+      await adminAuth.updateUser(params.id, { displayName });
+    }
     await adminDb.collection('users').doc(params.id).update(updateData);
     return NextResponse.json({ ok: true });
   } catch (err: any) {
