@@ -1,0 +1,9 @@
+# Excluir el gateway local de WhatsApp (corre aparte, no se sube a Vercel)
+OpenWA-main/
+
+# Scripts de administración local
+scripts/
+
+# Archivos de desarrollo
+*.log
+.env*.local
