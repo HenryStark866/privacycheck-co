@@ -27,5 +27,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  // Excluye assets de Next y archivos estáticos (imágenes, íconos) para que el
+  // middleware NO los redirija a /login — eso rompía la carga de /icon-cavaltec.png
+  // y /logo-cavaltec.jpeg (devolvían el HTML del login en vez de la imagen).
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|svg|webp|ico)$).*)'],
 };

@@ -4,8 +4,10 @@ import { auth } from '@/lib/firebase/client';
 import {
   GoogleAuthProvider,
   OAuthProvider,
+  signInWithPopup,
   signInWithRedirect,
   getRedirectResult,
+  type User,
 } from 'firebase/auth';
 import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -17,31 +19,32 @@ export default function LoginContent() {
   const [loading, setLoading] = useState<string | null>('processing');
   const [error, setError] = useState('');
 
+  // Completa el login: intercambia el idToken por la session cookie y navega.
+  async function completeSignIn(user: User) {
+    const idToken = await user.getIdToken(true);
+    const res = await fetch('/api/auth/session', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ idToken }),
+    });
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}));
+      throw new Error(d.error || `Error HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    // Hard navigation → el servidor lee la cookie nueva en la primera petición
+    window.location.href = data.needsOnboarding
+      ? '/onboarding'
+      : (params.get('next') ?? '/dashboard');
+  }
+
+  // Respaldo: solo aplica cuando el navegador cayó a signInWithRedirect
+  // (móvil o popup bloqueado). En desktop el login se completa por popup.
   useEffect(() => {
     getRedirectResult(auth)
       .then(async (result) => {
         if (!result) return; // no hay redirect pendiente, mostrar botones
-
-        // Obtener ID token con force-refresh para garantizar validez
-        const idToken = await result.user.getIdToken(true);
-
-        const res = await fetch('/api/auth/session', {
-          method:  'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ idToken }),
-        });
-
-        if (!res.ok) {
-          const d = await res.json().catch(() => ({}));
-          throw new Error(d.error || `Error HTTP ${res.status}`);
-        }
-
-        const data = await res.json();
-
-        // Hard navigation → el servidor lee la cookie nueva en la primera petición
-        window.location.href = data.needsOnboarding
-          ? '/onboarding'
-          : (params.get('next') ?? '/dashboard');
+        await completeSignIn(result.user);
       })
       .catch((err: any) => {
         const msg: string = err?.message ?? '';
@@ -54,21 +57,46 @@ export default function LoginContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function buildProvider(provider: 'google' | 'microsoft') {
+    if (provider === 'google') {
+      const p = new GoogleAuthProvider();
+      p.setCustomParameters({ prompt: 'select_account' });
+      return p;
+    }
+    const p = new OAuthProvider('microsoft.com');
+    p.setCustomParameters({ prompt: 'select_account' });
+    return p;
+  }
+
   async function signIn(provider: 'google' | 'microsoft') {
     setLoading(provider);
     setError('');
+    const authProvider = buildProvider(provider);
     try {
-      const authProvider =
-        provider === 'google'
-          ? new GoogleAuthProvider()
-          : (() => {
-              const p = new OAuthProvider('microsoft.com');
-              p.setCustomParameters({ prompt: 'select_account' });
-              return p;
-            })();
-      await signInWithRedirect(auth, authProvider);
+      // Popup: funciona aunque el dominio (Vercel) sea distinto al authDomain
+      // de Firebase (*.firebaseapp.com) sin depender de cookies de terceros,
+      // que es lo que rompía signInWithRedirect (volvía al login sin avanzar).
+      const result = await signInWithPopup(auth, authProvider);
+      await completeSignIn(result.user);
     } catch (err: any) {
-      setError(err.message ?? 'Error al iniciar sesión. Intenta de nuevo.');
+      const code: string = err?.code ?? '';
+      // El usuario cerró el popup → no es un error que mostrar
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        setLoading(null);
+        return;
+      }
+      // Popup bloqueado o no soportado (móvil) → caer a redirect
+      if (code === 'auth/popup-blocked' || code === 'auth/operation-not-supported-in-this-environment') {
+        try {
+          await signInWithRedirect(auth, authProvider);
+          return; // la página navega; getRedirectResult completa al volver
+        } catch (e2: any) {
+          setError(e2?.message ?? 'No se pudo iniciar sesión.');
+          setLoading(null);
+        }
+        return;
+      }
+      setError(err?.message ?? 'Error al iniciar sesión. Intenta de nuevo.');
       setLoading(null);
     }
   }
