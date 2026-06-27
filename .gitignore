@@ -40,6 +40,8 @@ OpenWA-main/
 supabase/
 
 # Scripts de deploy y credenciales (solo uso local)
+# .mjs de scripts/ son utilidades locales que pueden contener credenciales — NO subir
+scripts/*.mjs
 FIREBASE_CREDENCIALES.md
 fix_and_start.bat
 subir_github.bat
