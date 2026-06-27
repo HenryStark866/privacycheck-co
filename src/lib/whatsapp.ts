@@ -17,6 +17,36 @@ export const SESSION_NAME = process.env.OPENWA_SESSION_NAME || 'walle';
 // Caching de registro de webhook para evitar peticiones redundantes al gateway
 let isWebhookRegistered = false;
 
+// ─── Metadatos del gateway (para diagnóstico en la UI) ───────────────────────
+
+export interface GatewayMeta {
+  /** URL del gateway sin credenciales (segura para mostrar en el cliente). */
+  url: string;
+  /** Host:puerto extraído de la URL. */
+  host: string;
+  /** true si OPENWA_API_URL fue definido explícitamente (no es el default). */
+  isConfigured: boolean;
+  /** true si apunta a localhost o a una IP privada → NO sirve desde Vercel. */
+  isLocal: boolean;
+}
+
+/**
+ * Devuelve metadatos del destino del gateway para que el panel admin pueda
+ * mostrar a qué URL se está conectando y advertir si es local (no servirá en la nube).
+ */
+export function getGatewayMeta(): GatewayMeta {
+  const url = OPENWA_API_URL;
+  let host = url;
+  try { host = new URL(url).host; } catch { /* url malformada */ }
+  const isLocal = /(^|\/\/)(localhost|127\.0\.0\.1|0\.0\.0\.0|\[?::1\]?|192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/i.test(url);
+  return {
+    url,
+    host,
+    isConfigured: !!process.env.OPENWA_API_URL,
+    isLocal,
+  };
+}
+
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
 export interface WhatsAppSession {

@@ -24,8 +24,17 @@ interface RegisteredUser {
   whatsapp: string;
 }
 
+interface GatewayMeta {
+  url: string;
+  host: string;
+  isConfigured: boolean;
+  isLocal: boolean;
+  appIsRemote: boolean;
+}
+
 export default function WhatsAppPage() {
   const [session, setSession]         = useState<WASession | null>(null);
+  const [gateway, setGateway]         = useState<GatewayMeta | null>(null);
   const [adminNumber, setAdminNumber] = useState('');
   const [users, setUsers]             = useState<RegisteredUser[]>([]);
   const [loading, setLoading]         = useState(true);
@@ -46,9 +55,14 @@ export default function WhatsAppPage() {
         fetch('/api/whatsapp/users'),
       ]);
 
-      if (!statusRes.ok) throw new Error((await statusRes.json()).error || 'Sin respuesta de OpenWA');
+      if (!statusRes.ok) {
+        const errData = await statusRes.json().catch(() => ({}));
+        if (errData.gateway) setGateway(errData.gateway);
+        throw new Error(errData.error || 'Sin respuesta de OpenWA');
+      }
       const statusData = await statusRes.json();
       setSession(statusData.session);
+      if (statusData.gateway) setGateway(statusData.gateway);
       setError(null);
 
       if (numRes.ok) { const nd = await numRes.json(); setAdminNumber(nd.adminNumber ?? ''); setAdminUpdatedAt(nd.updatedAt ?? null); }
@@ -151,26 +165,71 @@ export default function WhatsAppPage() {
                 </button>
               </div>
 
+              {/* URL del gateway + badge Público/Local */}
+              {gateway && (
+                <div className="px-5 py-2.5 border-b border-gray-100 flex items-center gap-2 flex-wrap bg-white">
+                  <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Gateway</span>
+                  <code className="text-[11px] font-mono text-gray-700 bg-gray-100 px-2 py-0.5 rounded truncate max-w-[220px]">
+                    {gateway.host}
+                  </code>
+                  {gateway.isLocal ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                      Local
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">
+                      Público (VPS)
+                    </span>
+                  )}
+                  {gateway.isLocal && gateway.appIsRemote && (
+                    <span className="text-[10px] text-amber-700 font-medium w-full">
+                      ⚠️ La app está en la nube pero OPENWA_API_URL apunta a localhost: no podrá alcanzar el gateway. Apúntala a la URL pública de tu VPS.
+                    </span>
+                  )}
+                </div>
+              )}
+
               <div className="p-6">
                 {error ? (
                   <div className="space-y-5">
                     <div className="flex gap-3 bg-red-50 border border-red-100 rounded-xl p-4 text-red-700">
                       <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm font-semibold">OpenWA no responde</p>
-                        <p className="text-xs text-red-600/80 mt-0.5">El gateway de WhatsApp no está corriendo localmente.</p>
+                        <p className="text-sm font-semibold">El gateway no responde</p>
+                        <p className="text-xs text-red-600/80 mt-0.5">
+                          No se pudo contactar a <code className="font-mono">{gateway?.host ?? 'OpenWA'}</code>.
+                          {gateway && !gateway.isLocal && ' Verifica que el VPS esté encendido y la sesión vinculada.'}
+                        </p>
                       </div>
                     </div>
-                    <div className="bg-gray-950 text-gray-100 rounded-xl p-4 font-mono text-xs space-y-1.5 border border-gray-800">
-                      <div className="flex items-center gap-1.5 text-gray-500 pb-2 border-b border-gray-800">
-                        <Terminal className="w-3.5 h-3.5" />
-                        <span>Iniciar OpenWA localmente (Windows)</span>
+
+                    {/* Guía según el destino configurado */}
+                    {gateway?.isLocal ? (
+                      <div className="bg-gray-950 text-gray-100 rounded-xl p-4 font-mono text-xs space-y-1.5 border border-gray-800">
+                        <div className="flex items-center gap-1.5 text-gray-500 pb-2 border-b border-gray-800">
+                          <Terminal className="w-3.5 h-3.5" />
+                          <span>Iniciar OpenWA localmente (desarrollo)</span>
+                        </div>
+                        <p className="text-gray-500"># En la carpeta del gateway, ejecuta:</p>
+                        <p className="text-yellow-400 break-all">cd OpenWA-main</p>
+                        <p className="text-green-400">npm run dev</p>
+                        <p className="text-gray-500 pt-1"># Espera: &quot;Nest application successfully started&quot;</p>
+                        <p className="text-gray-500 pt-2 border-t border-gray-800"># Producción: despliega el gateway en un VPS</p>
+                        <p className="text-gray-500"># y apunta OPENWA_API_URL (Vercel) a su URL pública.</p>
                       </div>
-                      <p className="text-gray-500"># Abre una terminal y ejecuta:</p>
-                      <p className="text-yellow-400 break-all">cd &quot;C:\Users\tabor\OneDrive\Escritorio\RETO No 2 hackaton2026\OpenWA-main&quot;</p>
-                      <p className="text-green-400">npm run dev</p>
-                      <p className="text-gray-500 pt-1"># Espera: &quot;Nest application successfully started&quot;</p>
-                    </div>
+                    ) : (
+                      <div className="bg-gray-950 text-gray-100 rounded-xl p-4 font-mono text-xs space-y-1.5 border border-gray-800">
+                        <div className="flex items-center gap-1.5 text-gray-500 pb-2 border-b border-gray-800">
+                          <Terminal className="w-3.5 h-3.5" />
+                          <span>Verificar el gateway en el VPS</span>
+                        </div>
+                        <p className="text-gray-500"># 1) Comprueba que el contenedor esté arriba:</p>
+                        <p className="text-green-400 break-all">docker compose ps</p>
+                        <p className="text-gray-500 pt-1"># 2) Prueba la API pública:</p>
+                        <p className="text-yellow-400 break-all">curl {gateway?.url}/api/sessions</p>
+                        <p className="text-gray-500 pt-1"># 3) En Vercel, confirma OPENWA_API_URL y haz Redeploy.</p>
+                      </div>
+                    )}
                   </div>
                 ) : session?.status === 'CONNECTED' ? (
                   <div className="flex items-center gap-4 bg-green-50 border border-green-100 rounded-2xl p-5">
@@ -364,7 +423,7 @@ export default function WhatsAppPage() {
                   </div>
                 ))}
                 <p className="text-gray-400 pt-1 leading-relaxed">También acepta lenguaje natural. 🤖</p>
-                <p className="text-[10px] text-brand-600 font-medium pt-1">IA: Gemini 2.0 Flash (gratuito)</p>
+                <p className="text-[10px] text-brand-600 font-medium pt-1">IA: Gemini 2.5 Flash (gratuito)</p>
               </div>
             </div>
 
@@ -373,13 +432,14 @@ export default function WhatsAppPage() {
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest pb-2 border-b border-gray-100">Técnico</p>
               {[
                 { label: 'Gateway',  val: 'OpenWA / WAHA' },
-                { label: 'Webhook', val: '/api/whatsapp/webhook' },
-                { label: 'IA',      val: 'Gemini 1.5 Flash' },
-                { label: 'Puerto',  val: ':2785 (local)' },
+                { label: 'Endpoint', val: gateway?.host ?? '—' },
+                { label: 'Tipo',     val: gateway ? (gateway.isLocal ? 'Local' : 'VPS público') : '—' },
+                { label: 'Webhook',  val: '/api/whatsapp/webhook' },
+                { label: 'IA',       val: 'Gemini 2.5 Flash' },
               ].map(({ label, val }) => (
-                <div key={label} className="flex justify-between text-[11px]">
-                  <span className="text-gray-500">{label}</span>
-                  <span className="font-mono text-gray-700 truncate max-w-[130px] text-right">{val}</span>
+                <div key={label} className="flex justify-between text-[11px] gap-2">
+                  <span className="text-gray-500 shrink-0">{label}</span>
+                  <span className="font-mono text-gray-700 truncate max-w-[150px] text-right">{val}</span>
                 </div>
               ))}
             </div>
