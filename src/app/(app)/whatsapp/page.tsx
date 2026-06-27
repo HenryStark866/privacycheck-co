@@ -323,10 +323,19 @@ export default function WhatsAppPage() {
               </div>
               <div className="space-y-2 text-[11px]">
                 {[
-                  { cmd: 'empresas',        desc: 'Tus empresas registradas' },
-                  { cmd: 'empresa [nombre]', desc: 'Detalle de empresa' },
-                  { cmd: 'todos',            desc: 'Admin: todas las empresas' },
-                  { cmd: 'ayuda',            desc: 'Menú de comandos' },
+                  { cmd: 'empresas',           desc: 'Lista tus empresas con puntaje' },
+                  { cmd: 'empresa [nombre]',   desc: 'Detalle e historial de diagnósticos' },
+                  { cmd: 'diagnostico [emp]',  desc: 'Último diagnóstico con bloques A/B/C' },
+                  { cmd: 'brechas [emp]',      desc: 'Áreas críticas a mejorar' },
+                  { cmd: 'puntaje',            desc: 'Resumen de puntajes de todas tus empresas' },
+                  { cmd: 'estado',             desc: 'Semáforo general de cumplimiento' },
+                  { cmd: 'ley 1581',           desc: 'Resumen de la ley colombiana' },
+                  { cmd: 'articulo [N]',       desc: 'Artículo específico (ej: articulo 9)' },
+                  { cmd: 'nuevo [empresa]',    desc: 'Link para iniciar nuevo diagnóstico' },
+                  { cmd: 'todos',              desc: 'Admin: todas las empresas del sistema' },
+                  { cmd: 'resumen',            desc: 'Admin: estadísticas globales' },
+                  { cmd: 'contacto',           desc: 'Datos de soporte y administrador' },
+                  { cmd: 'ayuda',              desc: 'Menú completo de comandos' },
                 ].map(({ cmd, desc }) => (
                   <div key={cmd} className="flex items-start gap-2">
                     <code className="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-mono text-[10px] shrink-0">{cmd}</code>
@@ -334,6 +343,7 @@ export default function WhatsAppPage() {
                   </div>
                 ))}
                 <p className="text-gray-400 pt-1 leading-relaxed">También acepta lenguaje natural. 🤖</p>
+                <p className="text-[10px] text-brand-600 font-medium pt-1">IA: Gemini 2.0 Flash (gratuito)</p>
               </div>
             </div>
 
