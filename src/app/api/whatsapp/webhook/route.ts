@@ -181,9 +181,19 @@ export async function POST(request: Request) {
 
     const { event, sessionId, data } = payload || {};
 
+    // Solo procesar eventos de mensaje recibido
+    if (event && event !== 'message.received') {
+      return NextResponse.json({ ok: true, ignored: true, reason: 'event_ignored' });
+    }
+
     // Ignorar si no hay datos o es un mensaje de grupo
     if (!data || data.isGroup) {
       return NextResponse.json({ ok: true, ignored: true });
+    }
+
+    // Ignorar TODOS los mensajes propios para evitar loops del bot
+    if (data.fromMe) {
+      return NextResponse.json({ ok: true, ignored: true, reason: 'fromMe' });
     }
 
     const fromJid = (data.from || data.chatId || data.author || '').toString();
@@ -192,11 +202,6 @@ export async function POST(request: Request) {
     const senderPhone = fromJid.split('@')[0];
     const body = (data.body || data.text || data.content || '').toString().trim();
     if (!body) return NextResponse.json({ ok: true, ignored: true });
-
-    // Evitar bucles con mensajes del propio bot
-    if (data.fromMe && (body.includes('PrivacyCheck CO') || body.includes('🤖'))) {
-      return NextResponse.json({ ok: true, ignored: true });
-    }
 
     const cmd = body.toLowerCase();
 

@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const { email, password, displayName, systemRole, isApproved } = await request.json();
+  const { email, password, displayName, whatsapp, systemRole, isApproved } = await request.json();
 
   if (!email || !password) {
     return NextResponse.json({ error: 'Email y contraseña requeridos' }, { status: 400 });
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
       displayName,
       photoURL: '',
       provider: 'email',
-      whatsapp: null,
+      whatsapp: whatsapp || null,
       systemRole: systemRole || 'user',
       isApproved: isApproved ?? true,
       onboardingComplete: false,
