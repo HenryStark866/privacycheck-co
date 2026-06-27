@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { verifySession } from '@/lib/firebase/session';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Shield, LayoutDashboard, Building2 } from 'lucide-react';
+import { Shield, LayoutDashboard, Building2, MessageSquare } from 'lucide-react';
 import LogoutButton from '@/components/LogoutButton';
 import AIChat from '@/components/AIChat';
 
@@ -34,6 +34,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-2.5 pt-1.5 pb-1">Navegación</p>
           <NavLink href="/dashboard" icon={<LayoutDashboard className="w-4 h-4" />}>Dashboard</NavLink>
           <NavLink href="/companies" icon={<Building2 className="w-4 h-4" />}>Empresas</NavLink>
+          <NavLink href="/whatsapp" icon={<MessageSquare className="w-4 h-4" />}>Vincular WhatsApp</NavLink>
         </nav>
 
         {/* Powered by */}
