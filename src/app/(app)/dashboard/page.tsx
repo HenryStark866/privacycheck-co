@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { Building2, Plus, TrendingUp, CheckCircle2, Activity } from 'lucide-react';
+import { Building2, Plus, TrendingUp, CheckCircle2, Activity, ChevronRight } from 'lucide-react';
 import { verifySession } from '@/lib/firebase/session';
 import { adminDb } from '@/lib/firebase/admin';
 import { getCompaniesByUser, getEvaluationsByCompany } from '@/lib/firebase/firestore-helpers';
