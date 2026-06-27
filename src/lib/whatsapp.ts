@@ -39,6 +39,7 @@ function headers() {
   return {
     'Content-Type': 'application/json',
     'X-API-Key': OPENWA_API_KEY,
+    'Bypass-Tunnel-Reminder': 'true',
   };
 }
 
