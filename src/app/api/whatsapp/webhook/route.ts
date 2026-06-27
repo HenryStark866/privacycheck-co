@@ -36,8 +36,10 @@ import {
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://privacycheck-co.vercel.app';
 
-// Usar gemini-2.0-flash-exp que es completamente gratuito en la API de Google AI Studio
-const GEMINI_MODEL = 'gemini-2.0-flash';
+// gemini-2.5-flash tiene cuota diaria propia (2.0-flash se agota antes;
+// 1.5-flash ya no existe en la API). Respaldo: flash-latest.
+const GEMINI_MODEL = 'gemini-2.5-flash';
+const GEMINI_MODEL_FALLBACK = 'gemini-flash-latest';
 
 const BOT_PERSONA = `Eres el asistente oficial de WhatsApp de *PrivacyCheck CO*, una plataforma de autodiagnóstico de cumplimiento de la Ley 1581 de 2012 (Habeas Data / protección de datos personales en Colombia) y Privacy by Design.
 
@@ -137,17 +139,17 @@ async function geminiReply(prompt: string, context: string, userName: string): P
   };
 
   try {
-    // Intentar con gemini-2.0-flash primero (más moderno y gratuito)
+    // Intentar con el modelo principal (gemini-2.5-flash)
     let res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
       { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
     );
 
-    // Fallback a gemini-1.5-flash si el modelo principal falla
+    // Respaldo a flash-latest si el modelo principal falla (p.ej. cuota)
     if (!res.ok) {
-      console.warn('[Gemini] gemini-2.0-flash falló, intentando gemini-1.5-flash...');
+      console.warn(`[Gemini] ${GEMINI_MODEL} falló (${res.status}), intentando ${GEMINI_MODEL_FALLBACK}...`);
       res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL_FALLBACK}:generateContent?key=${GEMINI_API_KEY}`,
         { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
       );
     }

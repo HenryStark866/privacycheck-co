@@ -36,26 +36,22 @@ async function callGemini(
     },
   };
 
-  let res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    },
-  );
-
-  if (!res.ok) {
-    // Fallback a 1.5 si 2.0 falla
+  // gemini-2.5-flash tiene cuota diaria propia (2.0-flash se agota antes y
+  // 1.5-flash ya no existe en la API). flash-latest como respaldo.
+  const models = ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash'];
+  let res: Response | null = null;
+  for (const model of models) {
     res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       },
     );
+    if (res.ok) break; // modelo respondió
   }
+  if (!res) return null;
 
   if (!res.ok) {
     const err = await res.text();
