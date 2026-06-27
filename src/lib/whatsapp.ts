@@ -233,11 +233,10 @@ export async function sendWelcomeMessage(whatsapp: string, displayName: string):
  */
 export async function findUserByPhone(senderPhone: string): Promise<RegisteredUser | null> {
   const senderDigits = normalizePhone(senderPhone);
+  if (!senderDigits) return null;
 
-  // Buscar en Firestore usuarios con onboardingComplete
-  const snap = await adminDb.collection('users')
-    .where('onboardingComplete', '==', true)
-    .get();
+  // Buscar en Firestore en todos los usuarios
+  const snap = await adminDb.collection('users').get();
 
   for (const doc of snap.docs) {
     const data = doc.data();
@@ -247,13 +246,13 @@ export async function findUserByPhone(senderPhone: string): Promise<RegisteredUs
     // Match flexible: los 10 últimos dígitos coinciden
     const sender10 = senderDigits.slice(-10);
     const stored10 = storedDigits.slice(-10);
-    if (sender10 === stored10) {
+    if (sender10 && stored10 && sender10 === stored10) {
       return {
         uid:                doc.id,
         email:              data.email,
-        displayName:        data.displayName,
+        displayName:        data.displayName || data.email,
         whatsapp:           data.whatsapp,
-        onboardingComplete: data.onboardingComplete,
+        onboardingComplete: data.onboardingComplete ?? true,
         createdAt:          data.createdAt,
       };
     }
@@ -265,9 +264,7 @@ export async function findUserByPhone(senderPhone: string): Promise<RegisteredUs
  * Devuelve todos los usuarios con WhatsApp registrado (para el panel admin).
  */
 export async function getRegisteredWhatsAppUsers(): Promise<RegisteredUser[]> {
-  const snap = await adminDb.collection('users')
-    .where('onboardingComplete', '==', true)
-    .get();
+  const snap = await adminDb.collection('users').get();
   return snap.docs
     .map((d) => ({ uid: d.id, ...d.data() } as RegisteredUser))
     .filter((u) => !!u.whatsapp);

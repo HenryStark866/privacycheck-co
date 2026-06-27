@@ -54,7 +54,8 @@ function toMs(ts: FirebaseFirestore.Timestamp | Date | undefined): number {
 // ─── Companies ───────────────────────────────────────────────────────────────
 
 export async function getCompaniesByUser(uid: string, systemRole?: string): Promise<Array<Company & { role: string }>> {
-  if (systemRole === 'admin') {
+  const roleToUse = systemRole || (await getSystemRole(uid));
+  if (roleToUse === 'admin') {
     const snap = await adminDb.collection('companies').get();
     const results = snap.docs.map(doc => ({ id: doc.id, ...doc.data(), role: 'administrador' } as Company & { role: string }));
     return results.sort((a, b) => toMs(b.createdAt) - toMs(a.createdAt));
@@ -125,8 +126,20 @@ export async function deleteCompany(id: string) {
 export async function getMembership(uid: string, companyId: string): Promise<Membership | null> {
   const docId = `${uid}_${companyId}`;
   const docSnap = await adminDb.collection('memberships').doc(docId).get();
-  if (!docSnap.exists) return null;
-  return { id: docSnap.id, ...docSnap.data() } as Membership;
+  if (docSnap.exists) {
+    return { id: docSnap.id, ...docSnap.data() } as Membership;
+  }
+  // Si no hay membresía explícita, los administradores del sistema tienen acceso total como 'administrador'
+  const sysRole = await getSystemRole(uid);
+  if (sysRole === 'admin') {
+    return {
+      id: `virtual_admin_${uid}_${companyId}`,
+      userId: uid,
+      companyId: companyId,
+      role: 'administrador',
+    };
+  }
+  return null;
 }
 
 export async function createMembership(uid: string, companyId: string, role: Membership['role']) {

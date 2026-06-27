@@ -13,10 +13,12 @@ import uuid
 from fastapi import APIRouter, Header, Request
 from fastapi.responses import JSONResponse
 from openai import AsyncOpenAI
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import settings
 from src.database import async_session_factory
+from src.models import ProviderEnum, User
 from src.modules.ai.cache import RedisSemanticCache
 from src.modules.ai.fallback import DeterministicFallbackProvider
 from src.modules.ai.gateway import AIGateway
@@ -25,6 +27,34 @@ from src.modules.chat.adapters.telegram import TelegramAdapter
 from src.modules.chat.service import ChatService
 
 logger = logging.getLogger(__name__)
+
+# Usuario de sistema para mensajes que llegan por canales externos
+# (WhatsApp/Telegram) donde aún no hay un usuario autenticado. Se crea una
+# sola vez; cada número/chat conserva su propia sesión (uuid5 del remitente).
+_CHANNEL_SYSTEM_USER_EMAIL = "channel-system@habeascheck.local"
+
+
+async def _get_or_create_system_user(db: AsyncSession) -> uuid.UUID:
+    """Obtiene (o crea) el usuario de sistema para canales externos.
+
+    Las sesiones de chat requieren un user_id válido (FK NOT NULL). Los
+    webhooks no tienen un usuario autenticado, así que usamos un único
+    usuario de sistema en lugar de un UUID inexistente (que rompía la FK).
+    """
+    stmt = select(User).where(User.email == _CHANNEL_SYSTEM_USER_EMAIL)
+    result = await db.execute(stmt)
+    user = result.scalar_one_or_none()
+    if user is None:
+        user = User(
+            email=_CHANNEL_SYSTEM_USER_EMAIL,
+            name="Canal externo (WhatsApp/Telegram)",
+            provider=ProviderEnum.google,
+            provider_id="channel-system",
+            is_active=True,
+        )
+        db.add(user)
+        await db.flush()
+    return user.id
 
 
 def _get_ai_gateway() -> AIGateway:
@@ -95,9 +125,10 @@ def create_whatsapp_webhook_router() -> APIRouter:
                     uuid.uuid5(session_namespace, f"whatsapp:{message.sender_id}")
                 )
 
+                system_user_id = await _get_or_create_system_user(db)
                 result = await service.handle_message(
                     session_id=session_id,
-                    user_id=uuid.UUID("00000000-0000-0000-0000-000000000000"),  # System user for webhooks
+                    user_id=system_user_id,
                     channel="whatsapp",
                     message=message.text,
                     context=None,
@@ -178,9 +209,10 @@ def create_telegram_webhook_router() -> APIRouter:
                     uuid.uuid5(session_namespace, f"telegram:{message.sender_id}")
                 )
 
+                system_user_id = await _get_or_create_system_user(db)
                 result = await service.handle_message(
                     session_id=session_id,
-                    user_id=uuid.UUID("00000000-0000-0000-0000-000000000000"),  # System user for webhooks
+                    user_id=system_user_id,
                     channel="telegram",
                     message=message.text,
                     context=None,

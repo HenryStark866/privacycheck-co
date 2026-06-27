@@ -35,12 +35,26 @@ async function getAdminNumberFromDB(): Promise<string | null> {
 }
 
 async function isAdminNumber(senderPhone: string): Promise<boolean> {
+  const s = normalizePhone(senderPhone).slice(-10);
+  if (!s) return false;
+
   const candidates: (string | null | undefined)[] = [
     process.env.ADMIN_WHATSAPP_NUMBER,
     await getAdminNumberFromDB(),
   ];
-  const s = normalizePhone(senderPhone).slice(-10);
-  return candidates.some((n) => n && normalizePhone(n).slice(-10) === s);
+  if (candidates.some((n) => n && normalizePhone(n).slice(-10) === s)) return true;
+
+  // Verificar si algún usuario con systemRole === 'admin' tiene este número en Firestore
+  try {
+    const snap = await adminDb.collection('users').where('systemRole', '==', 'admin').get();
+    for (const d of snap.docs) {
+      const wa = d.data().whatsapp;
+      if (wa && normalizePhone(wa).slice(-10) === s) return true;
+    }
+  } catch (err) {
+    console.error('[WA Webhook] Error verificando rol admin en DB:', err);
+  }
+  return false;
 }
 
 async function geminiReply(prompt: string, context: string): Promise<string> {
@@ -163,23 +177,28 @@ async function cmdEmpresaDetalle(sessionId: string, chatId: string, query: strin
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
-    const { event, sessionId, data } = payload;
+    console.log('[WA Webhook] Evento recibido:', payload?.event);
 
-    // Solo mensajes de texto individuales (no grupos, no propios)
-    if (
-      event !== 'message.received' ||
-      !data ||
-      data.type !== 'chat' ||
-      data.isGroup ||
-      data.fromMe
-    ) {
+    const { event, sessionId, data } = payload || {};
+
+    // Ignorar si no hay datos o es un mensaje de grupo
+    if (!data || data.isGroup) {
       return NextResponse.json({ ok: true, ignored: true });
     }
 
-    const fromJid     = data.from as string;   // "573001234567@c.us"
-    const senderPhone = fromJid.split('@')[0];  // "573001234567"
-    const body        = (data.body ?? '').trim();
-    const cmd         = body.toLowerCase();
+    const fromJid = (data.from || data.chatId || data.author || '').toString();
+    if (!fromJid) return NextResponse.json({ ok: true, ignored: true });
+
+    const senderPhone = fromJid.split('@')[0];
+    const body = (data.body || data.text || data.content || '').toString().trim();
+    if (!body) return NextResponse.json({ ok: true, ignored: true });
+
+    // Evitar bucles con mensajes del propio bot
+    if (data.fromMe && (body.includes('PrivacyCheck CO') || body.includes('🤖'))) {
+      return NextResponse.json({ ok: true, ignored: true });
+    }
+
+    const cmd = body.toLowerCase();
 
     // ── 1. Identificar al remitente ──────────────────────────────────────────
     const isAdmin  = await isAdminNumber(senderPhone);
@@ -188,8 +207,8 @@ export async function POST(request: Request) {
     if (!isAdmin && !regUser) {
       await sendWhatsAppMessage(
         sessionId, fromJid,
-        `🔒 *Acceso no autorizado*\n\nTu número no está vinculado a ninguna cuenta de PrivacyCheck CO.\n\n` +
-        `Ingresa a *privacycheck-co.vercel.app*, crea tu cuenta con Google o Microsoft y vincula este número en el proceso de registro.`
+        `🔒 *Acceso no autorizado*\n\nTu número (+${senderPhone}) no está vinculado a ninguna cuenta de PrivacyCheck CO.\n\n` +
+        `Ingresa a *privacycheck-co.vercel.app*, crea tu cuenta o vincula este número en la plataforma.`
       );
       return NextResponse.json({ ok: true, status: 'unauthorized' });
     }
