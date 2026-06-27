@@ -56,6 +56,29 @@ export function toChatId(phone: string): string {
 // ─── Gestión de sesiones OpenWA ──────────────────────────────────────────────
 
 /**
+ * Mapea los estados que devuelve OpenWA
+ * (created|initializing|qr_ready|authenticating|ready|disconnected|failed)
+ * a los estados que usa la aplicación.
+ */
+function normalizeStatus(raw: string): WhatsAppSession['status'] {
+  switch ((raw || '').toLowerCase()) {
+    case 'ready':
+    case 'working':
+    case 'connected':    return 'CONNECTED';
+    case 'qr_ready':
+    case 'scan_qr':
+    case 'scan_qr_code': return 'SCAN_QR';
+    case 'authenticating':
+    case 'connecting':   return 'CONNECTING';
+    case 'created':
+    case 'starting':
+    case 'initializing': return 'INITIALIZING';
+    case 'failed':       return 'FAILED';
+    default:             return 'DISCONNECTED';
+  }
+}
+
+/**
  * Obtiene el estado de la sesión o la crea si no existe.
  */
 export async function getWhatsAppStatus(): Promise<WhatsAppSession> {
@@ -83,11 +106,11 @@ export async function getWhatsAppStatus(): Promise<WhatsAppSession> {
     const result: WhatsAppSession = {
       id:          session.id,
       name:        session.name,
-      status:      session.status,
-      phoneNumber: session.phoneNumber,
+      status:      normalizeStatus(session.status),
+      phoneNumber: session.phone ?? session.phoneNumber,
     };
 
-    if (session.status === 'SCAN_QR') {
+    if (result.status === 'SCAN_QR') {
       try {
         const qr = await fetch(`${OPENWA_API_URL}/api/sessions/${session.id}/qr`, {
           headers: headers(),
@@ -108,40 +131,6 @@ export async function getWhatsAppStatus(): Promise<WhatsAppSession> {
       phoneNumber: '573000000000',
     };
   }
-}
-
-  const sessions: any[] = await res.json();
-  let session = sessions.find((s) => s.name === SESSION_NAME);
-
-  if (!session) {
-    const cr = await fetch(`${OPENWA_API_URL}/api/sessions`, {
-      method: 'POST',
-      headers: headers(),
-      body: JSON.stringify({ name: SESSION_NAME }),
-      cache: 'no-store',
-    });
-    if (!cr.ok) throw new Error(`No se pudo crear la sesión: ${cr.statusText}`);
-    session = await cr.json();
-  }
-
-  const result: WhatsAppSession = {
-    id:          session.id,
-    name:        session.name,
-    status:      session.status,
-    phoneNumber: session.phoneNumber,
-  };
-
-  if (session.status === 'SCAN_QR') {
-    try {
-      const qr = await fetch(`${OPENWA_API_URL}/api/sessions/${session.id}/qr`, {
-        headers: headers(),
-        cache: 'no-store',
-      });
-      if (qr.ok) result.qr = (await qr.json()).image;
-    } catch { /* QR aún no disponible */ }
-  }
-
-  return result;
 }
 
 /**
