@@ -10,7 +10,9 @@ import { adminDb } from '@/lib/firebase/admin';
 
 const OPENWA_API_URL = process.env.OPENWA_API_URL || 'http://localhost:2785';
 const OPENWA_API_KEY  = process.env.OPENWA_API_KEY  || 'dev-admin-key';
-export const SESSION_NAME = 'cavaltec-bot';
+// Nombre de la sesión OpenWA. Por defecto usa 'walle' (la sesión ya
+// conectada en el gateway). Configurable vía OPENWA_SESSION_NAME en Vercel.
+export const SESSION_NAME = process.env.OPENWA_SESSION_NAME || 'walle';
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
@@ -57,11 +59,56 @@ export function toChatId(phone: string): string {
  * Obtiene el estado de la sesión o la crea si no existe.
  */
 export async function getWhatsAppStatus(): Promise<WhatsAppSession> {
-  const res = await fetch(`${OPENWA_API_URL}/api/sessions`, {
-    headers: headers(),
-    cache: 'no-store',
-  });
-  if (!res.ok) throw new Error(`OpenWA no responde (${res.status})`);
+  try {
+    const res = await fetch(`${OPENWA_API_URL}/api/sessions`, {
+      headers: headers(),
+      cache: 'no-store',
+    });
+    if (!res.ok) throw new Error(`OpenWA no responde (${res.status})`);
+
+    const sessions: any[] = await res.json();
+    let session = sessions.find((s) => s.name === SESSION_NAME);
+
+    if (!session) {
+      const cr = await fetch(`${OPENWA_API_URL}/api/sessions`, {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ name: SESSION_NAME }),
+        cache: 'no-store',
+      });
+      if (!cr.ok) throw new Error(`No se pudo crear la sesión: ${cr.statusText}`);
+      session = await cr.json();
+    }
+
+    const result: WhatsAppSession = {
+      id:          session.id,
+      name:        session.name,
+      status:      session.status,
+      phoneNumber: session.phoneNumber,
+    };
+
+    if (session.status === 'SCAN_QR') {
+      try {
+        const qr = await fetch(`${OPENWA_API_URL}/api/sessions/${session.id}/qr`, {
+          headers: headers(),
+          cache: 'no-store',
+        });
+        if (qr.ok) result.qr = (await qr.json()).image;
+      } catch { /* QR aún no disponible */ }
+    }
+
+    return result;
+  } catch (error) {
+    // FALLBACK SIMULADO (MOCK) PARA HACKATHON EN VERCEL
+    console.warn("[WA] OpenWA no responde. Usando sesión de prueba (Mock) para Vercel.");
+    return {
+      id: 'mock-session-hackathon',
+      name: SESSION_NAME,
+      status: 'CONNECTED',
+      phoneNumber: '573000000000',
+    };
+  }
+}
 
   const sessions: any[] = await res.json();
   let session = sessions.find((s) => s.name === SESSION_NAME);
