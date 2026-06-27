@@ -1,4 +1,7 @@
 // Next.js 14 requiere Suspense alrededor de useSearchParams en Client Components
+// force-dynamic: evita pre-render estático que falla sin Firebase env vars
+export const dynamic = 'force-dynamic';
+
 import { Suspense } from 'react';
 import LoginContent from './LoginContent';
 
