@@ -31,6 +31,7 @@ import {
   sendWhatsAppMessage,
   findUserByPhone,
   normalizePhone,
+  SESSION_NAME,
 } from '@/lib/whatsapp';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -484,31 +485,49 @@ async function cmdResumenAdmin(sessionId: string, chatId: string) {
 
 // ─── Handler principal ───────────────────────────────────────────────────────
 
+/**
+ * GET /api/whatsapp/webhook
+ * OpenWA hace una petición GET para verificar que el endpoint existe antes
+ * de registrar el webhook. Sin este handler el registro falla con 405.
+ */
+export async function GET() {
+  return NextResponse.json({ ok: true, service: 'PrivacyCheck CO WhatsApp Webhook' });
+}
+
 export async function POST(request: Request) {
   try {
     const payload = await request.json();
-    console.log('[WA Webhook] Evento recibido:', payload?.event);
+    console.log('[WA Webhook] Evento recibido:', payload?.event ?? payload?.type);
 
-    const { event, sessionId, data } = payload || {};
+    // OpenWA puede enviar el evento en distintos formatos según su versión.
+    // Formato A (WAHA moderno): { event, sessionId, payload: { ... } }
+    // Formato B (WAHA legado / WWebJS): { event, sessionId, data: { ... } }
+    // Formato C (OpenWA directo): { type, session, message: { ... } }
+    const event = payload?.event ?? payload?.type;
+    const sessionId: string =
+      payload?.sessionId ?? payload?.session ?? SESSION_NAME;
+    // data puede venir como payload.payload (WAHA) o payload.data (legado)
+    const data = payload?.payload ?? payload?.data ?? payload?.message ?? null;
 
     // Solo procesar eventos de mensaje recibido
-    if (event && event !== 'message.received') {
-      return NextResponse.json({ ok: true, ignored: true, reason: 'event_ignored' });
+    if (event && event !== 'message.received' && event !== 'message' && event !== 'message_received') {
+      return NextResponse.json({ ok: true, ignored: true, reason: 'event_ignored', event });
     }
 
     // Ignorar si no hay datos o es un mensaje de grupo
-    if (!data || data.isGroup) {
+    if (!data || data.isGroup || data.fromGroup) {
       return NextResponse.json({ ok: true, ignored: true });
     }
 
     // Evitar loops: ignorar mensajes propios SI contienen la firma del bot
     // Esto permite que el admin se envíe comandos a sí mismo para probar
-    const body = (data.body || data.text || data.content || '').toString().trim();
+    const body = (data.body || data.text || data.content || data.message || '').toString().trim();
     if (data.fromMe && body.includes('_PrivacyCheck CO')) {
       return NextResponse.json({ ok: true, ignored: true, reason: 'bot_reply_loop' });
     }
 
-    const fromJid = (data.from || data.chatId || data.author || '').toString();
+    // fromJid: el JID del remitente
+    const fromJid = (data.from || data.chatId || data.author || data.remoteJid || '').toString();
     if (!fromJid) return NextResponse.json({ ok: true, ignored: true });
 
     const senderPhone = fromJid.split('@')[0];

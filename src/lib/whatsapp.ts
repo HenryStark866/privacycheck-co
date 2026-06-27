@@ -9,10 +9,13 @@
 import { adminDb } from '@/lib/firebase/admin';
 
 const OPENWA_API_URL = process.env.OPENWA_API_URL || 'http://localhost:2785';
-const OPENWA_API_KEY  = process.env.OPENWA_API_KEY  || 'dev-admin-key';
+const OPENWA_API_KEY = process.env.OPENWA_API_KEY || 'dev-admin-key';
 // Nombre de la sesión OpenWA. Por defecto usa 'walle' (la sesión ya
 // conectada en el gateway). Configurable vía OPENWA_SESSION_NAME en Vercel.
 export const SESSION_NAME = process.env.OPENWA_SESSION_NAME || 'walle';
+
+// Caching de registro de webhook para evitar peticiones redundantes al gateway
+let isWebhookRegistered = false;
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 
@@ -50,8 +53,10 @@ export function normalizePhone(phone: string): string {
 
 /** Convierte número o JID a formato chatId de WhatsApp (573001234567@c.us) */
 export function toChatId(phone: string): string {
+  // Si el string original ya tiene '@', lo devolvemos tal cual (ya es un JID válido)
+  if (phone.includes('@')) return phone;
   const digits = normalizePhone(phone);
-  return digits.includes('@') ? phone : `${digits}@c.us`;
+  return `${digits}@c.us`;
 }
 
 // ─── Gestión de sesiones OpenWA ──────────────────────────────────────────────
@@ -65,17 +70,17 @@ function normalizeStatus(raw: string): WhatsAppSession['status'] {
   switch ((raw || '').toLowerCase()) {
     case 'ready':
     case 'working':
-    case 'connected':    return 'CONNECTED';
+    case 'connected': return 'CONNECTED';
     case 'qr_ready':
     case 'scan_qr':
     case 'scan_qr_code': return 'SCAN_QR';
     case 'authenticating':
-    case 'connecting':   return 'CONNECTING';
+    case 'connecting': return 'CONNECTING';
     case 'created':
     case 'starting':
     case 'initializing': return 'INITIALIZING';
-    case 'failed':       return 'FAILED';
-    default:             return 'DISCONNECTED';
+    case 'failed': return 'FAILED';
+    default: return 'DISCONNECTED';
   }
 }
 
@@ -105,9 +110,9 @@ export async function getWhatsAppStatus(): Promise<WhatsAppSession> {
     }
 
     const result: WhatsAppSession = {
-      id:          session.id,
-      name:        session.name,
-      status:      normalizeStatus(session.status),
+      id: session.id,
+      name: session.name,
+      status: normalizeStatus(session.status),
       phoneNumber: session.phone ?? session.phoneNumber,
     };
 
@@ -150,27 +155,43 @@ export async function getActiveSessionId(): Promise<string | null> {
 // ─── Webhooks ────────────────────────────────────────────────────────────────
 
 export async function setupWhatsAppWebhook(sessionId: string, appUrl: string) {
+  if (isWebhookRegistered) return;
   try {
     const webhookUrl = `${appUrl}/api/whatsapp/webhook`;
     const res = await fetch(`${OPENWA_API_URL}/api/sessions/${sessionId}/webhooks`, {
       headers: headers(),
       cache: 'no-store',
     });
-    if (!res.ok) return;
+    if (!res.ok) {
+      console.warn(`[WA] No se pudo listar webhooks (${res.status})`);
+      return;
+    }
 
     const existing: any[] = await res.json();
-    if (existing.some((w) => w.url === webhookUrl)) return; // ya registrado
+    if (existing.some((w) => w.url === webhookUrl)) {
+      console.log(`[WA] Webhook ya registrado → ${webhookUrl}`);
+      isWebhookRegistered = true;
+      return; // ya registrado
+    }
 
-    await fetch(`${OPENWA_API_URL}/api/sessions/${sessionId}/webhooks`, {
+    const postRes = await fetch(`${OPENWA_API_URL}/api/sessions/${sessionId}/webhooks`, {
       method: 'POST',
       headers: headers(),
       body: JSON.stringify({
-        name:   'PrivacyCheck CO',
-        url:    webhookUrl,
+        name: 'PrivacyCheck CO',
+        url: webhookUrl,
         events: ['message.received'],
+        retries: 3,
+        timeout: 15000,
       }),
     });
-    console.log(`[WA] Webhook registrado → ${webhookUrl}`);
+    if (postRes.ok) {
+      console.log(`[WA] Webhook registrado → ${webhookUrl}`);
+      isWebhookRegistered = true;
+    } else {
+      const errText = await postRes.text();
+      console.error(`[WA] Error registrando webhook: ${postRes.status} — ${errText}`);
+    }
   } catch (err) {
     console.error('[WA] Error registrando webhook:', err);
   }
@@ -185,16 +206,36 @@ export async function setupWhatsAppWebhook(sessionId: string, appUrl: string) {
  * @param text       Mensaje en texto plano (WhatsApp soporta *negrita*, _cursiva_)
  */
 export async function sendWhatsAppMessage(sessionId: string, to: string, text: string) {
+  // Usar la sesión activa: primero el sessionId recibido, luego SESSION_NAME como fallback
   const activeSession = sessionId || SESSION_NAME;
   const chatId = toChatId(to);
+
+  if (activeSession === 'mock-session-hackathon') {
+    console.log(`[WA MOCK] Enviando mensaje a ${chatId}: "${text}"`);
+    return { ok: true, mock: true };
+  }
+
   const res = await fetch(`${OPENWA_API_URL}/api/sessions/${activeSession}/messages/send-text`, {
     method: 'POST',
     headers: headers(),
-    body:    JSON.stringify({ chatId, text }),
+    body: JSON.stringify({ chatId, text }),
   });
+
   if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`[WA] Error enviando a ${chatId}: ${res.status} — ${body}`);
+    const errBody = await res.text();
+    // Si falla con el sessionId del payload, reintentar con SESSION_NAME
+    if (activeSession !== SESSION_NAME) {
+      console.warn(`[WA] Reintentando con SESSION_NAME tras fallo con sessionId='${activeSession}'`);
+      const retry = await fetch(`${OPENWA_API_URL}/api/sessions/${SESSION_NAME}/messages/send-text`, {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({ chatId, text }),
+      });
+      if (retry.ok) return retry.json();
+      const retryBody = await retry.text();
+      throw new Error(`[WA] Error enviando a ${chatId}: ${retry.status} — ${retryBody}`);
+    }
+    throw new Error(`[WA] Error enviando a ${chatId}: ${res.status} — ${errBody}`);
   }
   return res.json();
 }
@@ -237,27 +278,29 @@ export async function findUserByPhone(senderPhone: string): Promise<RegisteredUs
   const senderDigits = normalizePhone(senderPhone);
   if (!senderDigits) return null;
 
-  // Buscar en Firestore en todos los usuarios
-  const snap = await adminDb.collection('users').get();
+  // 1. Intentar buscar directo por coincidencia exacta con + y sin +
+  let snap = await adminDb.collection('users').where('whatsapp', '==', `+${senderDigits}`).limit(1).get();
+  if (snap.empty) {
+    snap = await adminDb.collection('users').where('whatsapp', '==', senderDigits).limit(1).get();
+  }
+  
+  // 2. Si no lo encuentra, intentar buscar por la terminación de 10 dígitos si es colombiano
+  if (snap.empty && senderDigits.length >= 10) {
+    const last10 = senderDigits.slice(-10);
+    snap = await adminDb.collection('users').where('whatsapp', '==', `+57${last10}`).limit(1).get();
+  }
 
-  for (const doc of snap.docs) {
-    const data = doc.data();
-    if (!data.whatsapp) continue;
-    const storedDigits = normalizePhone(data.whatsapp);
-
-    // Match flexible: los 10 últimos dígitos coinciden
-    const sender10 = senderDigits.slice(-10);
-    const stored10 = storedDigits.slice(-10);
-    if (sender10 && stored10 && sender10 === stored10) {
-      return {
-        uid:                doc.id,
-        email:              data.email,
-        displayName:        data.displayName || data.email,
-        whatsapp:           data.whatsapp,
-        onboardingComplete: data.onboardingComplete ?? true,
-        createdAt:          data.createdAt,
-      };
-    }
+  if (!snap.empty) {
+    const d = snap.docs[0];
+    const data = d.data();
+    return {
+      uid: d.id,
+      email: data.email,
+      displayName: data.displayName || data.email,
+      whatsapp: data.whatsapp,
+      onboardingComplete: data.onboardingComplete ?? true,
+      createdAt: data.createdAt,
+    };
   }
   return null;
 }

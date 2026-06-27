@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import {
   Smartphone, CheckCircle2, AlertCircle, Loader2,
   Save, MessageSquare, HelpCircle, RefreshCw, Terminal,
@@ -194,7 +195,7 @@ export default function WhatsAppPage() {
                       <p className="text-xs text-gray-500 mt-1">WhatsApp → ⋮ → Dispositivos vinculados → Vincular un dispositivo</p>
                     </div>
                     {session.qr ? (
-                      <img src={session.qr} alt="QR WhatsApp" className="w-56 h-56 rounded-2xl border-2 border-gray-100 shadow-sm" />
+                      <Image src={session.qr} alt="QR WhatsApp" width={224} height={224} className="rounded-2xl border-2 border-gray-100 shadow-sm" unoptimized />
                     ) : (
                       <div className="w-56 h-56 bg-gray-50 border border-dashed border-gray-200 rounded-2xl flex items-center justify-center">
                         <Loader2 className="w-8 h-8 text-gray-300 animate-spin" />
