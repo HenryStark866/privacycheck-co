@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { computeScore } from '@/lib/scoring';
 import { getQuestion } from '@/lib/questions';
@@ -54,7 +54,7 @@ export default function ResultsPage() {
   const result = computeScore(answers);
   const { score, scoreRounded, blocks, maturity, gaps, notes } = result;
 
-  async function generateAI() {
+  const generateAI = useCallback(async () => {
     setLoadingAI(true);
     try {
       const interpretRes = await fetch('/api/ai', {
@@ -102,7 +102,14 @@ export default function ResultsPage() {
     } finally {
       setLoadingAI(false);
     }
-  }
+  }, [id, answers, scoreRounded, maturity, blocks, gaps]);
+
+  // Auto-generar interpretación si cargó y está vacía
+  useEffect(() => {
+    if (loaded && Object.keys(answers).length > 0 && !interpretation && !loadingAI) {
+      generateAI();
+    }
+  }, [loaded, answers, interpretation, loadingAI, generateAI]);
 
   async function exportPDF() {
     setExportLoading(true);

@@ -87,7 +87,8 @@ function normalizeStatus(raw: string): WhatsAppSession['status'] {
 /**
  * Obtiene el estado de la sesión o la crea si no existe.
  */
-export async function getWhatsAppStatus(): Promise<WhatsAppSession> {
+export async function getWhatsAppStatus(customSessionName?: string): Promise<WhatsAppSession> {
+  const name = customSessionName || SESSION_NAME;
   try {
     const res = await fetch(`${OPENWA_API_URL}/api/sessions`, {
       headers: headers(),
@@ -96,13 +97,13 @@ export async function getWhatsAppStatus(): Promise<WhatsAppSession> {
     if (!res.ok) throw new Error(`OpenWA no responde (${res.status})`);
 
     const sessions: any[] = await res.json();
-    let session = sessions.find((s) => s.name === SESSION_NAME);
+    let session = sessions.find((s) => s.name === name);
 
     if (!session) {
       const cr = await fetch(`${OPENWA_API_URL}/api/sessions`, {
         method: 'POST',
         headers: headers(),
-        body: JSON.stringify({ name: SESSION_NAME }),
+        body: JSON.stringify({ name }),
         cache: 'no-store',
       });
       if (!cr.ok) throw new Error(`No se pudo crear la sesión: ${cr.statusText}`);
@@ -132,7 +133,7 @@ export async function getWhatsAppStatus(): Promise<WhatsAppSession> {
     console.warn("[WA] OpenWA no responde. Usando sesión de prueba (Mock) para Vercel.");
     return {
       id: 'mock-session-hackathon',
-      name: SESSION_NAME,
+      name: name,
       status: 'CONNECTED',
       phoneNumber: process.env.ADMIN_WHATSAPP_NUMBER || '573245769748',
     };
@@ -143,9 +144,9 @@ export async function getWhatsAppStatus(): Promise<WhatsAppSession> {
  * Devuelve el ID de la sesión CONNECTED, o null si no hay sesión activa.
  * No lanza error: falla silenciosamente para no romper el onboarding.
  */
-export async function getActiveSessionId(): Promise<string | null> {
+export async function getActiveSessionId(customSessionName?: string): Promise<string | null> {
   try {
-    const s = await getWhatsAppStatus();
+    const s = await getWhatsAppStatus(customSessionName);
     return s.status === 'CONNECTED' ? s.id : null;
   } catch {
     return null;

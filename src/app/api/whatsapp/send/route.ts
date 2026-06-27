@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'to y text son requeridos' }, { status: 400 });
     }
 
-    const sessionId = await getActiveSessionId();
+    const sessionId = await getActiveSessionId(`session_${session.uid}`);
     if (!sessionId) {
       return NextResponse.json({ error: 'OpenWA no está conectado. Inicia el gateway localmente.' }, { status: 503 });
     }

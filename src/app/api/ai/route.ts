@@ -1,4 +1,3 @@
-import Anthropic from '@anthropic-ai/sdk';
 import { NextResponse } from 'next/server';
 import {
   SYSTEM_PROMPT, explainPrompt, guidePrompt,
@@ -9,40 +8,58 @@ import { verifySession } from '@/lib/firebase/session';
 const VALID_KINDS = ['explain', 'guide', 'action_plan', 'interpret'] as const;
 type Kind = typeof VALID_KINDS[number];
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
 // Modelos en orden de preferencia
 const MODELS = [
-  'claude-haiku-4-5-20251001',
-  'claude-3-5-haiku-20241022',
-  'claude-3-haiku-20240307',
+  'gemini-2.5-flash',
+  'gemini-flash-latest',
+  'gemini-2.0-flash',
 ];
 
 async function callAI(system: string, userPrompt: string): Promise<string> {
-  let lastError: unknown;
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || apiKey === 'REEMPLAZA_CON_TU_API_KEY_REAL') {
+    throw new Error('Gemini API key no configurada');
+  }
+
+  const body = {
+    system_instruction: { parts: [{ text: system }] },
+    contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+    generationConfig: {
+      maxOutputTokens: 1024,
+      temperature: 0.2,
+    },
+  };
+
+  let res: Response | null = null;
+  let lastError: any = null;
+
   for (const model of MODELS) {
     try {
-      const response = await anthropic.messages.create({
-        model,
-        max_tokens: 1024,
-        system,
-        messages: [{ role: 'user', content: userPrompt }],
-      });
-      return response.content
-        .filter((b) => b.type === 'text')
-        .map((b) => (b as { type: 'text'; text: string }).text)
-        .join('\n').trim();
-    } catch (err: any) {
+      res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        },
+      );
+      if (res.ok) break;
+      lastError = new Error(`Error ${res.status}: ${await res.text()}`);
+      console.warn(`Modelo ${model} falló con status ${res.status}, intentando siguiente...`);
+    } catch (err) {
       lastError = err;
-      const isModelError =
-        err?.status === 404 ||
-        err?.error?.type === 'not_found_error' ||
-        String(err?.message ?? '').includes('model');
-      if (!isModelError) throw err;
-      console.warn(`Modelo ${model} no disponible, intentando siguiente...`);
+      console.warn(`Modelo ${model} causó error de conexión, intentando siguiente...`);
     }
   }
-  throw lastError;
+
+  if (!res || !res.ok) {
+    throw lastError || new Error('No se pudo conectar con Gemini');
+  }
+
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+  if (!text) throw new Error('Respuesta vacía de Gemini');
+  return text;
 }
 
 export async function POST(request: Request) {

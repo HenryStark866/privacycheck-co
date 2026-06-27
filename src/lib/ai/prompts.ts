@@ -20,7 +20,7 @@ export function actionPlanPrompt(
   const gapsJson = JSON.stringify(gaps);
   return `Eres asesor de protección de datos (Ley 1581, fase de diseño). Dada esta lista de brechas (preguntas respondidas "No", con su peso) y el puntaje por bloque, genera un plan de acción priorizado para cerrar las brechas, de mayor a menor impacto. Brechas: ${gapsJson}. Puntajes: BloqueA ${blocks.a}/40, BloqueB ${blocks.b}/36, BloqueC ${blocks.c}/24.
 Responde ÚNICAMENTE con JSON válido, sin texto adicional ni \`\`\`:
-{"acciones":[{"prioridad":1,"brecha":"texto de la pregunta","accion":"qué hacer, concreto","impacto_estimado":"+X%","plazo_sugerido":"corto/medio/largo"}]}`;
+{"acciones":[{"prioridad":1,"brecha":"texto de la pregunta","accion":"qué hacer, concreto","impacto_estimado":"+X%","plazo_sugerido":"corto/medio/largo","articulo":"Art. X de la Ley 1581"}]}`;
 }
 
 export function interpretPrompt(
@@ -35,16 +35,17 @@ export function interpretPrompt(
 export function buildFallbackActionPlan(
   gaps: Array<{ questionId: number; questionText: string; weight: number }>,
 ): ActionItem[] {
-  const templates: Record<number, { accion: string; plazo: string }> = {
-    2:  { accion: 'Documentar la política de tratamiento de datos y publicarla en el sitio web o canal de fácil acceso.', plazo: 'corto' },
-    3:  { accion: 'Incluir en la política las finalidades específicas por las que se recopila cada tipo de dato.', plazo: 'corto' },
-    4:  { accion: 'Agregar a la política una sección que liste los derechos de los titulares (acceso, rectificación, supresión, revocatoria, queja).', plazo: 'corto' },
-    5:  { accion: 'Definir el canal y procedimiento para ejercer derechos (correo, formulario, tiempo de respuesta).', plazo: 'corto' },
-    6:  { accion: 'Implementar un proceso de evaluación de impacto de privacidad (PIA) antes de lanzar nuevos productos o procesos.', plazo: 'medio' },
-    7:  { accion: 'Revisar los datos recopilados y eliminar los que no sean estrictamente necesarios para la finalidad.', plazo: 'medio' },
-    8:  { accion: 'Configurar los sistemas para que la opción por defecto sea recopilar el mínimo de datos posible.', plazo: 'medio' },
-    9:  { accion: 'Establecer un sistema de gestión de riesgos de privacidad: identificar, evaluar y mitigar riesgos de forma periódica.', plazo: 'medio' },
-    10: { accion: 'Designar formalmente un oficial de protección de datos personales con responsabilidades claras.', plazo: 'largo' },
+  const templates: Record<number, { accion: string; plazo: string; articulo: string }> = {
+    1:  { accion: 'Elaborar y aprobar una política de tratamiento de datos personales de acuerdo con la Ley 1581.', plazo: 'corto', articulo: 'Art. 9 y 17' },
+    2:  { accion: 'Documentar la política de tratamiento de datos y publicarla en el sitio web o canal de fácil acceso.', plazo: 'corto', articulo: 'Art. 17 y 18' },
+    3:  { accion: 'Incluir en la política las finalidades específicas por las que se recopila cada tipo de dato.', plazo: 'corto', articulo: 'Art. 3 y 4' },
+    4:  { accion: 'Agregar a la política una sección que liste los derechos de los titulares (acceso, rectificación, supresión, revocatoria, queja).', plazo: 'corto', articulo: 'Art. 8' },
+    5:  { accion: 'Definir el canal y procedimiento para ejercer derechos (correo, formulario, tiempo de respuesta).', plazo: 'corto', articulo: 'Art. 14 y 15' },
+    6:  { accion: 'Implementar un proceso de evaluación de impacto de privacidad (PIA) antes de lanzar nuevos productos o procesos.', plazo: 'medio', articulo: 'Privacidad desde el Diseño' },
+    7:  { accion: 'Revisar los datos recopilados y eliminar los que no sean estrictamente necesarios para la finalidad.', plazo: 'medio', articulo: 'Art. 4 (Minimización)' },
+    8:  { accion: 'Configurar los sistemas para que la opción por defecto sea recopilar el mínimo de datos posible.', plazo: 'medio', articulo: 'Privacidad por Defecto' },
+    9:  { accion: 'Establecer un sistema de gestión de riesgos de privacidad: identificar, evaluar y mitigar riesgos de forma periódica.', plazo: 'medio', articulo: 'Art. 17 (Seguridad)' },
+    10: { accion: 'Designar formalmente un oficial de protección de datos personales con responsabilidades claras.', plazo: 'largo', articulo: 'Art. 17' },
   };
 
   return gaps.map((gap, i) => ({
@@ -53,6 +54,7 @@ export function buildFallbackActionPlan(
     accion: templates[gap.questionId]?.accion ?? 'Revisar y documentar este aspecto de cumplimiento.',
     impacto_estimado: `+${gap.weight}%`,
     plazo_sugerido: templates[gap.questionId]?.plazo ?? 'medio',
+    articulo: templates[gap.questionId]?.articulo ?? 'Ley 1581 de 2012',
   }));
 }
 

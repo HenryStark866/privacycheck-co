@@ -9,7 +9,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const session = await getWhatsAppStatus();
+    const session = await getWhatsAppStatus(`session_${user.uid}`);
 
     // Determinar la URL pública de la aplicación de forma dinámica
     const host = request.headers.get('host') || 'localhost:3000';
