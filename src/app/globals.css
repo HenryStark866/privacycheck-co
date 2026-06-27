@@ -161,3 +161,91 @@
     text-shadow: none;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   ACCESIBILIDAD (WCAG 2.1) — clases activadas por <AccessibilityWidget />
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Skip-link: salta directo al contenido con el teclado (Tab) */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  background: #0d9488;
+  color: #fff;
+  padding: 0.625rem 1rem;
+  border-radius: 0 0 0.75rem 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.skip-link:focus {
+  left: 0;
+  outline: 3px solid #99f6e4;
+}
+
+/* Foco visible global — navegación por teclado */
+*:focus-visible {
+  outline: 3px solid rgba(20, 184, 166, 0.55);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Tamaño de texto escalable */
+html.a11y-text-lg  { font-size: 112.5%; }
+html.a11y-text-xl  { font-size: 128%; }
+
+/* Subrayar todos los enlaces para mayor distinción */
+html.a11y-underline a {
+  text-decoration: underline !important;
+  text-underline-offset: 2px;
+}
+
+/* Reducir animaciones (respeta también prefers-reduced-motion del sistema) */
+html.a11y-reduce-motion *,
+html.a11y-reduce-motion *::before,
+html.a11y-reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* Alto contraste — refuerza bordes, texto y enlaces */
+html.a11y-contrast body {
+  background-color: #ffffff;
+  color: #000000;
+}
+html.a11y-contrast .text-slate-400,
+html.a11y-contrast .text-slate-500 {
+  color: #1e293b !important;
+}
+html.a11y-contrast a,
+html.a11y-contrast .text-brand-600 {
+  color: #035e54 !important;
+  text-decoration: underline;
+}
+html.a11y-contrast .border-slate-100,
+html.a11y-contrast .border-slate-200 {
+  border-color: #475569 !important;
+}
+html.a11y-contrast .bg-brand-500,
+html.a11y-contrast .bg-brand-600 {
+  background-color: #035e54 !important;
+}
+
+/* Animación de entrada del panel a11y */
+.animate-in {
+  animation: a11yIn 160ms ease-out;
+}
+@keyframes a11yIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

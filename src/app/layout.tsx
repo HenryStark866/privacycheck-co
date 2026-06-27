@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import SplashScreen from '@/components/SplashScreen';
+import AccessibilityWidget from '@/components/AccessibilityWidget';
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://privacycheck-co.vercel.app'),
@@ -27,8 +28,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es-CO">
       <body>
+        <a href="#contenido-principal" className="skip-link">Saltar al contenido principal</a>
         <SplashScreen />
         {children}
+        <AccessibilityWidget />
       </body>
     </html>
   );

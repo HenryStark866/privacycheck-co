@@ -8,6 +8,7 @@ import Gauge from '@/components/Gauge';
 import BlockBreakdown from '@/components/BlockBreakdown';
 import GapList from '@/components/GapList';
 import WhatIfSimulator from '@/components/WhatIfSimulator';
+import MLRiskPanel from '@/components/MLRiskPanel';
 import type { MaturityLevel } from '@/lib/scoring';
 import type { ActionItem } from '@/lib/ai/prompts';
 import { buildFallbackActionPlan } from '@/lib/ai/prompts';
@@ -183,6 +184,9 @@ export default function ResultsPage() {
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
         <BlockBreakdown blocks={blocks} />
       </div>
+
+      {/* Machine Learning — Predicción de riesgo */}
+      <MLRiskPanel answers={answers} />
 
       {/* IA */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">

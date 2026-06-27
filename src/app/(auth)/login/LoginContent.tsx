@@ -6,6 +6,8 @@ import {
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup,
   type User,
 } from 'firebase/auth';
 import { useSearchParams } from 'next/navigation';
@@ -94,6 +96,35 @@ export default function LoginContent() {
     }
   }
 
+  /** Inicia sesión con Google (OAuth). El backend (api/auth/session) crea el
+   *  usuario en Firestore con provider='google' y dispara el onboarding. */
+  async function handleGoogle() {
+    setError('');
+    setNotice('');
+    setLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const cred = await signInWithPopup(auth, provider);
+      await completeSignIn(cred.user);
+    } catch (err: any) {
+      const code = err?.code ?? '';
+      // El usuario cerró el popup: no es un error que mostrar.
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        setLoading(false);
+        return;
+      }
+      if (code === 'auth/operation-not-allowed') {
+        setError('El acceso con Google no está habilitado en Firebase. Actívalo en Authentication → Sign-in method.');
+      } else if (code === 'auth/unauthorized-domain') {
+        setError('Este dominio no está autorizado en Firebase. Agrégalo en Authentication → Settings → Dominios autorizados.');
+      } else {
+        setError(friendlyError(code, err?.message ?? ''));
+      }
+      setLoading(false);
+    }
+  }
+
   async function handleReset() {
     const mail = email.trim();
     if (!mail) { setError('Escribe tu correo arriba y vuelve a tocar "¿Olvidaste tu contraseña?".'); return; }
@@ -122,7 +153,7 @@ export default function LoginContent() {
         <span className="text-[10px] text-brand-600 border border-brand-200 rounded-full px-2.5 py-0.5 ml-1 bg-brand-50 backdrop-blur tracking-widest uppercase font-medium">Beta</span>
       </header>
 
-      <main className="relative z-10 flex-1 flex items-center justify-center px-4 pb-8">
+      <main id="contenido-principal" className="relative z-10 flex-1 flex items-center justify-center px-4 pb-8">
         <div className="w-full max-w-[440px]">
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 bg-white border border-slate-200 shadow-sm rounded-full px-4 py-1.5 mb-6">
@@ -171,6 +202,24 @@ export default function LoginContent() {
               >
                 <UserPlus className="w-4 h-4" /> Crear cuenta
               </button>
+            </div>
+
+            {/* OAuth — Continuar con Google */}
+            <button
+              type="button"
+              onClick={handleGoogle}
+              disabled={loading}
+              aria-label="Continuar con Google"
+              className="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-medium rounded-xl px-4 py-3 text-sm transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] shadow-sm"
+            >
+              <GoogleIcon />
+              {isLogin ? 'Continuar con Google' : 'Registrarse con Google'}
+            </button>
+
+            <div className="flex items-center gap-4 my-6">
+              <div className="h-px flex-1 bg-slate-200" />
+              <span className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">o con tu correo</span>
+              <div className="h-px flex-1 bg-slate-200" />
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -306,6 +355,17 @@ function TrustBadge({ icon, label }: { icon: React.ReactNode; label: string }) {
       <span className="text-brand-500">{icon}</span>
       {label}
     </div>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+      <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" />
+      <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" />
+      <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" />
+      <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" />
+    </svg>
   );
 }
 

@@ -29,7 +29,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       />
 
       {/* Main */}
-      <main className="flex-1 overflow-auto min-w-0 relative pt-16 lg:pt-0">
+      <main id="contenido-principal" className="flex-1 overflow-auto min-w-0 relative pt-16 lg:pt-0">
         <CartoonBackground />
         <div className="max-w-5xl mx-auto px-4 sm:px-8 py-6 sm:py-10 relative z-10">
           {children}
