@@ -12,6 +12,7 @@ import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import Image from 'next/image';
 import { Lock, CheckCircle, Shield, BarChart2, Lightbulb, Mail, User as UserIcon, ArrowRight, LogIn, UserPlus } from 'lucide-react';
+import CartoonBackground from '@/components/CartoonBackground';
 
 type Mode = 'login' | 'register';
 
@@ -110,11 +111,8 @@ export default function LoginContent() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 bg-grid-pattern relative overflow-hidden">
-      {/* Background Orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] rounded-full opacity-10 blur-[100px] bg-brand-500 animate-pulse-slow" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full opacity-5 blur-[120px] bg-blue-500 animate-float" />
-      </div>
+      {/* Cartoon Background Elements */}
+      <CartoonBackground />
 
       <header className="relative z-10 flex items-center gap-3 px-8 py-6">
         <div className="flex items-center justify-center w-9 h-9 rounded-xl overflow-hidden bg-white shadow-sm border border-slate-200">

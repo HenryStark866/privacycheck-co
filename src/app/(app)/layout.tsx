@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Shield, LayoutDashboard, Building2, MessageSquare, Users } from 'lucide-react';
 import LogoutButton from '@/components/LogoutButton';
 import AIChat from '@/components/AIChat';
+import CartoonBackground from '@/components/CartoonBackground';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await verifySession();
@@ -86,7 +87,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
       {/* Main */}
       <main className="flex-1 overflow-auto min-w-0 relative">
-        <div className="absolute top-[-20%] left-[20%] w-[500px] h-[500px] rounded-full opacity-5 blur-[120px] bg-brand-400 pointer-events-none" />
+        <CartoonBackground />
         <div className="max-w-5xl mx-auto px-8 py-10 relative z-10">
           {children}
         </div>
