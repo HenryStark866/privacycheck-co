@@ -62,4 +62,5 @@ export interface ActionItem {
   accion: string;
   impacto_estimado: string;
   plazo_sugerido: string;
+  articulo?: string;
 }
