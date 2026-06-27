@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\modules\empresas\schemas.py
+# hypothesis_version: 6.151.12
+
+[100, 255, 'Business sector', 'Colombian NIT', 'Company name', 'Company size', 'User ID to assign', 'admin', 'auditor', 'evaluador', 'from_attributes', 'nit', 'rol']

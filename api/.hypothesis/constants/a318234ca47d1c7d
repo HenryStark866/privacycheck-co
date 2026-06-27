@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\shared\utils\pagination.py
+# hypothesis_version: 6.151.12
+
+[100, 'Items per page', 'T', 'has_next', 'has_previous', 'items', 'page', 'page_size', 'pagination', 'total', 'total_pages']

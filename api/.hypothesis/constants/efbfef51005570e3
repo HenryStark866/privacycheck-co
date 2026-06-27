@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\shared\middleware\security_logging.py
+# hypothesis_version: 6.151.12
+
+['[REDACTED]', 'access_token', 'api_key', 'authorization', 'body', 'credentials', 'details', 'errors', 'event_type', 'failed_auth', 'ip', 'loc', 'msg', 'password', 'path', 'reason', 'refresh_token', 'secret', 'timestamp', 'token', 'type', 'user_id', 'validation_failure']

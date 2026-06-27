@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\shared\middleware\rate_limit.py
+# hypothesis_version: 6.151.12
+
+[120, 429, '/auth', '/chat', '/health', '/webhooks', 'Retry-After', 'auth', 'category', 'chat', 'detail', 'limit', 'other', 'rate_limit_exceeded', 'retry_after', 'unknown', 'user_id', 'webhooks']

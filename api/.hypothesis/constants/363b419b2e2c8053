@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\modules\chat\adapters\whatsapp.py
+# hypothesis_version: 6.151.12
+
+[400, 4096, '...', '/', '@', 'Content-Type', '\\*(.+?)\\*', '\\*\\*(.+?)\\*\\*', '\\1', '\\[(.+?)\\]\\(.+?\\)', '^#{1,6}\\s+', '^>\\s+', '^\\s*[-*+]\\s+', '^\\s*\\d+\\.\\s+', '_(.+?)_', '__(.+?)__', '`(.+?)`', '```[\\s\\S]*?```', 'apikey', 'application/json', 'buttonText', 'buttons', 'conversation', 'data', 'displayText', 'extendedTextMessage', 'key', 'label', 'message', 'number', 'remoteJid', 'text', 'whatsapp', '~~(.+?)~~', '• ']

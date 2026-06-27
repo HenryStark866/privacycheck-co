@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\modules\empresas\router.py
+# hypothesis_version: 6.151.12
+
+[100, 201, '/{empresa_id}', 'Items per page', 'Page number', 'items', 'pagination']

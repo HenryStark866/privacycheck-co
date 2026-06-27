@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\modules\ai\cache.py
+# hypothesis_version: 6.151.12
+
+['acci[oó]n(?:es)?', 'answers_hash', 'c[oó]mo', 'como\\s+cumplir', 'como\\s+implementar', 'describe', 'explain', 'explic(?:ar|ame|a)', 'freeform', 'gu[ií]a', 'guide', 'impacto', 'intent', 'interpret', 'interpretar', 'madurez', 'mejora', 'mejorar', 'nivel', 'pasos', 'plan', 'prioridades', 'puntaje', 'qu[ée]\\s+es', 'qu[ée]\\s+pasa\\s+si', 'qu[ée]\\s+significa', 'que\\s+pasa\\s+si', 'question_id', 'resultado', 'score', 'sector', 'si\\s+mejoro', 'simular', 'whatif']

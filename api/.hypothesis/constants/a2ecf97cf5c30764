@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\models.py
+# hypothesis_version: 6.151.12
+
+[100, 255, 512, 'CASCADE', 'ChatMessage', 'ChatSession', 'Empresa', 'Empresa | None', 'EmpresaUser', 'Evaluacion', 'Evaluacion | None', 'SET NULL', 'User', 'User | None', 'admin', 'ai_cache', 'all, delete-orphan', 'auditor', 'chat_messages', 'chat_sessions', 'chat_sessions.id', 'created_at', 'empresa', 'empresa_id', 'empresa_users', 'empresas', 'empresas.id', 'evaluacion', 'evaluaciones', 'evaluaciones.id', 'evaluador', 'google', 'members', 'memberships', 'messages', 'metadata', 'microsoft', 'provider_enum', 'rol_enum', 'session', 'session_id', 'uq_empresa_user', 'user', 'user_id', 'users', 'users.id']

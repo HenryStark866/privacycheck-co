@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\modules\auth\dependencies.py
+# hypothesis_version: 6.151.12
+
+['Bearer', 'WWW-Authenticate', 'app_metadata', 'avatar_url', 'email', 'empresa_id', 'full_name', 'name', 'provider', 'sub', 'user_metadata']

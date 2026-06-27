@@ -1,0 +1,41 @@
+# Version control
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.venv
+venv
+.env
+
+# Tests
+tests/
+
+# Node (if any frontend tooling)
+node_modules/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Kiro specs
+.kiro
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Coverage and reports
+htmlcov/
+.coverage
+*.cover

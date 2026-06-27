@@ -1,0 +1,23 @@
+# =============================================================================
+# Development overrides - Hot reload + volume mounts
+# =============================================================================
+# This file is automatically loaded by Docker Compose alongside docker-compose.yml.
+# It enables live code reloading for local development.
+#
+# For production, rename or remove this file, or use:
+#   docker compose -f docker-compose.yml up
+# =============================================================================
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    volumes:
+      - ./src:/app/src:ro
+      - ./alembic:/app/alembic:ro
+      - ./alembic.ini:/app/alembic.ini:ro
+    command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "src"]
+    environment:
+      - DEBUG=true

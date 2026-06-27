@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\main.py
+# hypothesis_version: 6.151.12
+
+['*', '/api/v1', '/auth', '/chat', '/diagnostico', '/docs', '/empresas', '/evaluaciones', '/health', '/openapi.json', '/reportes', 'Auth', 'Chat', 'Diagnostico', 'Empresas', 'Evaluaciones', 'Health', 'Reportes', 'SELECT 1', 'database', 'degraded', 'dependencies', 'healthy', 'service', 'status', 'unavailable', 'version']

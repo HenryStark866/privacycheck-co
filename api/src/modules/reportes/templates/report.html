@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte de Evaluación - Habeas Check</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm 1.5cm;
+            @top-center {
+                content: "";
+            }
+            @bottom-center {
+                content: "Página " counter(page) " de " counter(pages);
+                font-size: 9px;
+                color: #666;
+            }
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.5;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #1a5276;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            color: #1a5276;
+            font-size: 22px;
+            margin: 0 0 5px 0;
+        }
+
+        .header p {
+            color: #555;
+            font-size: 11px;
+            margin: 2px 0;
+        }
+
+        .meta-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .meta-info .left, .meta-info .right {
+            width: 48%;
+        }
+
+        .meta-info p {
+            margin: 3px 0;
+            font-size: 10px;
+        }
+
+        .meta-info strong {
+            color: #1a5276;
+        }
+
+        .section-title {
+            color: #1a5276;
+            font-size: 14px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        /* Score Gauge */
+        .gauge-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .gauge {
+            width: 200px;
+            height: 100px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gauge-bg {
+            width: 200px;
+            height: 100px;
+            border-radius: 100px 100px 0 0;
+            background: linear-gradient(to right, #e74c3c, #f39c12, #27ae60);
+        }
+
+        .gauge-fill {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 160px;
+            height: 80px;
+            margin-left: -80px;
+            border-radius: 80px 80px 0 0;
+            background: white;
+        }
+
+        .gauge-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #1a5276;
+            margin-top: 10px;
+        }
+
+        .gauge-label {
+            font-size: 14px;
+            color: #555;
+            margin-top: 5px;
+        }
+
+        .maturity-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+            color: white;
+            background-color: {{ maturity_color }};
+            margin-top: 8px;
+        }
+
+        /* Block Bars */
+        .blocks-container {
+            margin: 15px 0;
+        }
+
+        .block-row {
+            margin-bottom: 12px;
+        }
+
+        .block-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+            font-size: 10px;
+        }
+
+        .block-bar-bg {
+            width: 100%;
+            height: 20px;
+            background-color: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .block-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s;
+        }
+
+        .block-a .block-bar-fill { background-color: #3498db; }
+        .block-b .block-bar-fill { background-color: #2ecc71; }
+        .block-c .block-bar-fill { background-color: #9b59b6; }
+
+        /* Gap Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 10px;
+        }
+
+        table th {
+            background-color: #1a5276;
+            color: white;
+            padding: 8px 10px;
+            text-align: left;
+        }
+
+        table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        /* Notes */
+        .notes-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .notes-list li {
+            padding: 8px 12px;
+            margin-bottom: 5px;
+            background-color: #fff3cd;
+            border-left: 4px solid #f39c12;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 40px;
+            padding-top: 15px;
+            border-top: 2px solid #1a5276;
+            text-align: center;
+            font-size: 9px;
+            color: #777;
+        }
+
+        .footer p {
+            margin: 2px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Institutional Header -->
+    <div class="header">
+        <h1>Habeas Check</h1>
+        <p>Reporte de Evaluación de Cumplimiento</p>
+        <p>Ley 1581 de 2012 — Protección de Datos Personales</p>
+    </div>
+
+    <!-- Company and Evaluation Meta -->
+    <div class="meta-info">
+        <div class="left">
+            <p><strong>Empresa:</strong> {{ empresa_nombre }}</p>
+            <p><strong>NIT:</strong> {{ empresa_nit }}</p>
+            <p><strong>Sector:</strong> {{ empresa_sector or 'No especificado' }}</p>
+            <p><strong>Tamaño:</strong> {{ empresa_tamano or 'No especificado' }}</p>
+        </div>
+        <div class="right">
+            <p><strong>Fecha de evaluación:</strong> {{ fecha_evaluacion }}</p>
+            <p><strong>Evaluador:</strong> {{ evaluador_nombre }}</p>
+            <p><strong>ID Evaluación:</strong> {{ evaluacion_id }}</p>
+        </div>
+    </div>
+
+    <!-- Score Gauge -->
+    <h2 class="section-title">Puntuación General</h2>
+    <div class="gauge-container">
+        <div class="gauge">
+            <div class="gauge-bg"></div>
+            <div class="gauge-fill"></div>
+        </div>
+        <div class="gauge-value">{{ score }}%</div>
+        <div class="gauge-label">Nivel de Cumplimiento</div>
+        <div class="maturity-badge">{{ maturity }}</div>
+    </div>
+
+    <!-- Block Bars -->
+    <h2 class="section-title">Desglose por Bloques</h2>
+    <div class="blocks-container">
+        {% for block_key, block in blocks.items() %}
+        <div class="block-row block-{{ block_key | lower }}">
+            <div class="block-label">
+                <span><strong>Bloque {{ block_key }}:</strong> {{ block.name }}</span>
+                <span>{{ block.earned }} / {{ block.max }} puntos</span>
+            </div>
+            <div class="block-bar-bg">
+                <div class="block-bar-fill" style="width: {{ (block.earned / block.max * 100) if block.max > 0 else 0 }}%"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Gap Table -->
+    {% if gaps %}
+    <h2 class="section-title">Brechas Identificadas</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Prioridad</th>
+                <th>Pregunta</th>
+                <th>Descripción</th>
+                <th>Peso</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for gap in gaps %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>Q{{ gap.question_id }}</td>
+                <td>{{ gap.text }}</td>
+                <td>{{ gap.weight }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- Notes / Observations -->
+    {% if notes %}
+    <h2 class="section-title">Observaciones</h2>
+    <ul class="notes-list">
+        {% for note in notes %}
+        <li>{{ note }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <!-- Footer -->
+    <div class="footer">
+        <p><strong>Habeas Check</strong> — Autodiagnóstico de Cumplimiento Ley 1581 de 2012</p>
+        <p>Este reporte fue generado automáticamente. La información contenida refleja el estado de cumplimiento al momento de la evaluación.</p>
+        <p>Generado el {{ fecha_generacion }}</p>
+    </div>
+</body>
+</html>

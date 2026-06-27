@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\modules\diagnostico\questions.py
+# hypothesis_version: 6.151.12
+
+['A', 'B', 'C', 'block', 'complementary', 'explain', 'gate', 'guide', 'id', 'role', 'scored', 'text', 'weight']

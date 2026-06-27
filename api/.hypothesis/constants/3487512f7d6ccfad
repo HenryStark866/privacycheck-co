@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\modules\empresas\validators.py
+# hypothesis_version: 6.151.12
+
+['^\\d{9,10}(-\\d)?$']

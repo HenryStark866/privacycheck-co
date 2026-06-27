@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\shared\middleware\security_headers.py
+# hypothesis_version: 6.151.12
+
+['1; mode=block', 'DENY', 'Permissions-Policy', 'Referrer-Policy', 'X-Frame-Options', 'X-XSS-Protection', "default-src 'self'", 'nosniff']

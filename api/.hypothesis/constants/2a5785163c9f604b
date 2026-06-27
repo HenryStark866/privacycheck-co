@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\modules\chat\service.py
+# hypothesis_version: 6.151.12
+
+['answers', 'assistant', 'content', 'empresa_id', 'evaluacion_id', 'gaps', 'maturity', 'metadata', 'model', 'reply', 'role', 'score', 'session_id', 'streamed', 'suggested_actions', 'type', 'user', 'web']

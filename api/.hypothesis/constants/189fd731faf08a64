@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\modules\reportes\service.py
+# hypothesis_version: 6.151.12
+
+['#1a8c37', '#27ae60', '#999', '#e67e22', '#e74c3c', '#f39c12', '%d/%m/%Y %H:%M', '%d/%m/%Y %H:%M UTC', 'Básico', 'Gestionado', 'Inicial', 'Líder', 'No especificado', 'Optimizado', 'blocks', 'earned', 'empresa_nit', 'empresa_nombre', 'empresa_sector', 'empresa_tamano', 'evaluacion_id', 'evaluador_nombre', 'fecha_evaluacion', 'fecha_generacion', 'gaps', 'maturity', 'maturity_color', 'max', 'name', 'notes', 'report.html', 'score', 'templates']

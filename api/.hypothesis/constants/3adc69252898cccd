@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\modules\ai\gateway.py
+# hypothesis_version: 6.151.12
+
+[10.0, 'General', 'Generar plan', 'Mediana', 'Simular impacto', 'Simular mejora', 'Ver plan completo', 'Ver plan de mejora', 'action', 'answers', 'block', 'blocks', 'cached', 'calculate_score', 'company_size', 'completion_tokens', 'content', 'current_answers', 'current_score', 'deepseek-chat', 'delta', 'earned', 'error', 'explain', 'explain_question', 'explanation', 'fallback', 'freeform', 'gaps', 'generate_plan', 'guide', 'id', 'improvements', 'improvements_applied', 'interpretation', 'label', 'maturity', 'max', 'model', 'name', 'next', 'notes', 'payload', 'plan', 'priority', 'projected_maturity', 'projected_score', 'prompt_tokens', 'question_id', 'role', 'score', 'sector', 'sector_note', 'simulate_whatif', 'size', 'system', 'text', 'tokens_used', 'tool', 'tool_call_id', 'tool_calls', 'user', 'weight', 'whatif']

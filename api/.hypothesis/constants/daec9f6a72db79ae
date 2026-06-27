@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\modules\chat\adapters\telegram.py
+# hypothesis_version: 6.151.12
+
+[400, 'Markdown', 'action', 'callback_data', 'chat', 'chat_id', 'id', 'inline_keyboard', 'label', 'message', 'parse_mode', 'reply_markup', 'telegram', 'text']

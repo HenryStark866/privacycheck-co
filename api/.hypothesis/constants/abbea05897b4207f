@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\modules\chat\router.py
+# hypothesis_version: 6.151.12
+
+['/message', '/stream', 'data', 'done', 'event', 'message', 'metadata', 'reply', 'session', 'session_id', 'suggested_actions', 'type', 'web']

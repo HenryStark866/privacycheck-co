@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\modules\auth\service.py
+# hypothesis_version: 6.151.12
+
+['@', 'HS256', 'authenticated', 'exp', 'microsoft', 'require_exp', 'require_sub']

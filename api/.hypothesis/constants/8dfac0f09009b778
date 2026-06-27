@@ -1,0 +1,4 @@
+# file: C:\Users\luisc\Desktop\RetoUDEA\api\src\modules\ai\tools.py
+# hypothesis_version: 6.151.12
+
+['additionalProperties', 'answers', 'array', 'boolean', 'calculate_score', 'current_answers', 'description', 'explain_question', 'function', 'gaps', 'generate_plan', 'improvements', 'integer', 'items', 'maximum', 'minimum', 'name', 'object', 'parameters', 'properties', 'question_id', 'required', 'sector', 'simulate_whatif', 'size', 'string', 'text', 'type', 'weight']
