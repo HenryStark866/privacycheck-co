@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analizando Diagnóstico - PrivacyCheck CO</title>
+    <!-- Cargamos Tailwind CSS desde CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Iconos de Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Animación personalizada para el spinner de carga estilo Apple */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin-slow {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-[#F2F2F7] text-[#1C1C1E] font-sans antialiased min-h-screen flex items-center justify-center p-4">
+
+    <!-- CONTENEDOR CENTRAL MINIMALISTA -->
+    <div class="max-w-md w-full flex flex-col items-center text-center">
+        
+        <!-- Icono del Procesador/IA (Estilo Apple: Tarjeta blanca con bordes súper suavizados) -->
+        <div class="w-16 h-16 bg-white rounded-2xl shadow-sm border border-[#E5E5EA] flex items-center justify-center text-[#007AFF] mb-6">
+            <i data-lucide="cpu" class="w-8 h-8 stroke-[1.5]"></i>
+        </div>
+
+        <!-- Títulos Principales -->
+        <h1 class="text-[22px] font-bold tracking-tight text-[#1C1C1E] mb-2">
+            Analizando su diagnóstico
+        </h1>
+        <p class="text-[14px] text-[#8E8E93] leading-relaxed max-w-sm mb-10 font-medium">
+            Nuestra IA está evaluando sus respuestas frente a los requisitos de la Ley 1581/2012.
+        </p>
+
+        <!-- LISTA DE PASOS DEL PROCESAMIENTO -->
+        <div class="w-full space-y-3.5 text-left pl-4 max-w-[340px] mx-auto">
+            
+            <!-- Paso 1: Completado (Verde) -->
+            <div class="flex items-center gap-3 text-[#34C759] font-medium text-[14px] transition-all">
+                <div class="shrink-0 w-5 h-5 flex items-center justify-center">
+                    <i data-lucide="check-circle-2" class="w-5 h-5 stroke-[2.5]"></i>
+                </div>
+                <span>Procesando respuestas del cuestionario...</span>
+            </div>
+
+            <!-- Paso 2: Completado (Verde) -->
+            <div class="flex items-center gap-3 text-[#34C759] font-medium text-[14px] transition-all">
+                <div class="shrink-0 w-5 h-5 flex items-center justify-center">
+                    <i data-lucide="check-circle-2" class="w-5 h-5 stroke-[2.5]"></i>
+                </div>
+                <span>Calculando nivel de cumplimiento por categoría...</span>
+            </div>
+
+            <!-- Paso 3: En Proceso (Tarjeta destacada con Spinner Azul) -->
+            <div class="flex items-center gap-3 text-[#007AFF] font-semibold text-[14px] bg-white border border-[#E5E5EA] p-3.5 -mx-4 rounded-xl shadow-xs transition-all">
+                <!-- Spinner de carga hecho con CSS puro -->
+                <div class="shrink-0 w-5 h-5 border-2 border-[#007AFF]/20 border-t-[#007AFF] rounded-full animate-spin-slow"></div>
+                <span>Identificando brechas y áreas de mejora...</span>
+            </div>
+
+            <!-- Paso 4: Pendiente (Gris opaco) -->
+            <div class="flex items-start gap-3 text-[#8E8E93]/50 font-medium text-[14px] transition-all pt-1">
+                <div class="shrink-0 w-5 h-5 border-2 border-[#8E8E93]/30 rounded-full mt-0.5"></div>
+                <span class="leading-tight">Generando recomendaciones personalizadas con IA...</span>
+            </div>
+
+            <!-- Paso 5: Pendiente (Gris opaco) -->
+            <div class="flex items-center gap-3 text-[#8E8E93]/50 font-medium text-[14px] transition-all pt-1">
+                <div class="shrink-0 w-5 h-5 border-2 border-[#8E8E93]/30 rounded-full"></div>
+                <span>Preparando informe de diagnóstico...</span>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Inicialización de iconos -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

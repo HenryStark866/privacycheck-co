@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados de Diagnóstico - PrivacyCheck CO</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-[#F2F2F7] text-[#1C1C1E] font-sans antialiased min-h-screen pb-16">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-[#E5E5EA] px-6 py-3.5 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <div class="w-7 h-7 bg-[#007AFF] rounded-lg flex items-center justify-center text-white">
+                <i data-lucide="shield" class="w-4 h-4"></i>
+            </div>
+            <span class="font-semibold text-[17px] tracking-tight">PrivacyCheck CO</span>
+            <span class="text-[#8E8E93] text-[15px] mx-1">•</span>
+            <span class="text-[#8E8E93] text-[15px]">Resultados</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-[#1C1C1E] rounded-full flex items-center justify-center text-white text-xs font-bold">M</div>
+            <span class="text-[15px] font-medium text-[#3A3A3C]">mi usuario</span>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 mt-8">
+        
+        <div class="relative flex justify-between items-center max-w-xl mx-auto mb-10">
+            <div class="absolute inset-0 top-4 h-0.5 bg-[#007AFF] -z-10 rounded-full"></div>
+            <div class="flex flex-col items-center gap-1.5">
+                <div class="w-8 h-8 bg-[#007AFF] rounded-full flex items-center justify-center text-white shadow-xs"><i data-lucide="check" class="w-4 h-4 stroke-[3]"></i></div>
+                <span class="text-[13px] font-semibold text-[#007AFF]">Perfil</span>
+            </div>
+            <div class="flex flex-col items-center gap-1.5">
+                <div class="w-8 h-8 bg-[#007AFF] rounded-full flex items-center justify-center text-white shadow-xs"><i data-lucide="check" class="w-4 h-4 stroke-[3]"></i></div>
+                <span class="text-[13px] font-semibold text-[#007AFF]">Cuestionario</span>
+            </div>
+            <div class="flex flex-col items-center gap-1.5">
+                <div class="w-8 h-8 bg-[#007AFF] rounded-full flex items-center justify-center text-white font-bold ring-4 ring-[#F2F2F7] shadow-md text-[15px]">3</div>
+                <span class="text-[13px] font-semibold text-[#007AFF]">Resultados</span>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-white p-6 rounded-2xl border border-[#E5E5EA] shadow-2xs">
+            <div>
+                <div class="flex items-center gap-2 text-xs text-[#8E8E93] font-medium mb-1">
+                    <span class="flex items-center gap-1"><i data-lucide="user" class="w-3.5 h-3.5"></i> mi usuario</span>
+                    <span>•</span>
+                    <span>Tecnología</span>
+                    <span>•</span>
+                    <span>11-55 empleados</span>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight text-[#1C1C1E]">Diagnóstico de Cumplimiento</h1>
+                <p class="text-xs text-[#8E8E93] mt-0.5">Ley 1581 de 2012 — Reporte de Brechas — Automático por IA</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button class="flex items-center gap-1.5 px-4 py-2 bg-[#F2F2F7] text-[#007AFF] rounded-xl text-sm font-semibold hover:bg-[#E5E5EA] transition"><i data-lucide="download" class="w-4 h-4"></i> Exportar</button>
+                <button class="flex items-center gap-1.5 px-4 py-2 bg-[#007AFF] text-white rounded-xl text-sm font-semibold hover:opacity-90 shadow-2xs transition">Nuevo diagnóstico</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+            
+            <div class="lg:col-span-7 space-y-6">
+                
+                <div class="bg-white p-6 rounded-2xl border border-[#E5E5EA] shadow-2xs flex flex-col sm:flex-row items-center gap-6">
+                    <div class="relative w-28 h-28 flex items-center justify-center shrink-0">
+                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                            <path class="text-[#E5E5EA]" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path class="text-[#FF9500]" stroke-dasharray="67, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        </svg>
+                        <div class="absolute flex flex-col items-center">
+                            <span class="text-2xl font-extrabold tracking-tight">67%</span>
+                            <span class="text-[9px] text-[#8E8E93] uppercase font-bold tracking-wider">Estado</span>
+                        </div>
+                    </div>
+                    <div class="text-center sm:text-left">
+                        <span class="bg-[#FF9500]/10 text-[#FF9500] text-[11px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide inline-block mb-1.5">Cumplimiento Moderado</span>
+                        <h3 class="text-[16px] font-bold text-[#1C1C1E]">Su organización presenta riesgos latentes</h3>
+                        <p class="text-xs text-[#8E8E93] leading-relaxed mt-1">Se han procesado las 24 preguntas obligatorias. Aunque cuenta con bases estables, hay fallas estructurales críticas en la captura de autorización.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-[#E5E5EA] shadow-2xs">
+                    <div class="mb-4">
+                        <h3 class="text-[16px] font-bold text-[#1C1C1E]">Brechas Identificadas</h3>
+                        <p class="text-xs text-[#8E8E93]">Categorías que requieren atención inmediata por respuestas "No" o "Parcialmente"</p>
+                    </div>
+
+                    <div class="space-y-2.5">
+                        <div class="flex items-center justify-between p-3.5 bg-[#FF3B30]/5 border border-[#FF3B30]/10 rounded-xl transition hover:bg-[#FF3B30]/10">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-[#FF3B30]/10 text-[#FF3B30] rounded-lg flex items-center justify-center shrink-0">
+                                    <i data-lucide="book-open" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-[#1C1C1E]">Principios de Tratamiento</h4>
+                                    <p class="text-[11px] text-[#FF3B30] font-medium">4 obligaciones sin implementar</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold text-[#FF3B30] bg-white px-2 py-0.5 rounded-md border border-[#FF3B30]/20">0%</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3.5 bg-[#FF9500]/5 border border-[#FF9500]/10 rounded-xl transition hover:bg-[#FF9500]/10">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-[#FF9500]/10 text-[#FF9500] rounded-lg flex items-center justify-center shrink-0">
+                                    <i data-lucide="check-square" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-[#1C1C1E]">Autorización y Consentimiento</h4>
+                                    <p class="text-[11px] text-[#FF9500] font-medium">3 obligaciones parciales</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold text-[#FF9500] bg-white px-2 py-0.5 rounded-md border border-[#FF9500]/20">63%</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3.5 bg-[#FF9500]/5 border border-[#FF9500]/10 rounded-xl transition hover:bg-[#FF9500]/10">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-[#FF9500]/10 text-[#FF9500] rounded-lg flex items-center justify-center shrink-0">
+                                    <i data-lucide="users" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-[#1C1C1E]">Derechos del Titular</h4>
+                                    <p class="text-[11px] text-[#FF9500] font-medium">1 sin implementar • 2 parciales</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold text-[#FF9500] bg-white px-2 py-0.5 rounded-md border border-[#FF9500]/20">50%</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3.5 bg-[#FF9500]/5 border border-[#FF9500]/10 rounded-xl transition hover:bg-[#FF9500]/10">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 bg-[#FF9500]/10 text-[#FF9500] rounded-lg flex items-center justify-center shrink-0">
+                                    <i data-lucide="lock" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-[#1C1C1E]">Seguridad de la Información</h4>
+                                    <p class="text-[11px] text-[#FF9500] font-medium">1 sin implementar • 1 parcial</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold text-[#FF9500] bg-white px-2 py-0.5 rounded-md border border-[#FF9500]/20">63%</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-3 bg-[#34C759]/5 border border-[#34C759]/10 rounded-xl opacity-75">
+                            <div class="flex items-center gap-3">
+                                <div class="

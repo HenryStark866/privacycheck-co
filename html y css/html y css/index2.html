@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<title>PrivacyCheck CO</title>
+
+<style>
+body{
+  font-family:
+  "SF Pro Display",
+  "SF Pro Text",
+  -apple-system,
+  BlinkMacSystemFont,
+  system-ui,
+  sans-serif;
+}
+</style>
+
+</head>
+
+<body class="bg-zinc-50 text-zinc-900">
+
+<!-- NAVBAR -->
+
+<header class="bg-white border-b border-zinc-200">
+
+  <div class="max-w-7xl mx-auto px-8 h-16 flex items-center">
+
+    <div class="flex items-center gap-3">
+
+      <div
+        class="w-8 h-8 rounded-xl
+        bg-zinc-100 flex items-center justify-center">
+
+        🛡️
+
+      </div>
+
+      <div class="flex items-center gap-2">
+
+        <span class="font-semibold">
+          PrivacyCheck CO
+        </span>
+
+        <span class="text-zinc-400">
+          ·
+        </span>
+
+        <span class="text-zinc-500">
+          Ley 1581/2012
+        </span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</header>
+
+<!-- MAIN -->
+
+<main class="max-w-5xl mx-auto px-6 py-16">
+
+  <!-- STEPPER -->
+
+  <div class="flex items-center justify-center mb-20">
+
+    <div class="flex items-center w-full max-w-3xl">
+
+      <!-- STEP 1 -->
+
+      <div class="flex flex-col items-center">
+
+        <div
+          class="w-12 h-12 rounded-full
+          bg-blue-500 text-white
+          flex items-center justify-center
+          font-semibold">
+
+          1
+
+        </div>
+
+        <span class="mt-3 text-sm font-medium">
+          Perfil
+        </span>
+
+      </div>
+
+      <div class="flex-1 h-px bg-zinc-300 mx-4"></div>
+
+      <!-- STEP 2 -->
+
+      <div class="flex flex-col items-center">
+
+        <div
+          class="w-12 h-12 rounded-full
+          border-2 border-zinc-300
+          bg-white
+          flex items-center justify-center
+          font-semibold text-zinc-500">
+
+          2
+
+        </div>
+
+        <span class="mt-3 text-sm text-zinc-500">
+          Cuestionario
+        </span>
+
+      </div>
+
+      <div class="flex-1 h-px bg-zinc-300 mx-4"></div>
+
+      <!-- STEP 3 -->
+
+      <div class="flex flex-col items-center">
+
+        <div
+          class="w-12 h-12 rounded-full
+          border-2 border-zinc-300
+          bg-white
+          flex items-center justify-center
+          font-semibold text-zinc-500">
+
+          3
+
+        </div>
+
+        <span class="mt-3 text-sm text-zinc-500">
+          Resultados
+        </span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- TITLE -->
+
+  <section class="max-w-2xl mx-auto">
+
+    <h1 class="text-5xl font-semibold tracking-tight mb-4">
+
+      Información de la empresa
+
+    </h1>
+
+    <p class="text-lg text-zinc-500 leading-relaxed mb-12">
+
+      Esta información nos permite contextualizar su diagnóstico y generar
+      recomendaciones específicas para su sector y tamaño.
+
+    </p>
+
+  </section>
+
+  <!-- CARD -->
+
+  <section
+    class="max-w-3xl mx-auto
+    bg-white
+    rounded-3xl
+    border border-zinc-200
+    shadow-sm
+    p-10">
+
+    <div class="grid md:grid-cols-2 gap-8">
+
+      <!-- INPUT -->
+
+      <div>
+        <label class="block mb-3 font-medium">
+          Nombre o razón social *
+        </label>
+
+        <input
+          type="text"
+          placeholder="Ej. Acme S.A.S."
+          class="w-full h-14 px-5
+          rounded-2xl
+          bg-zinc-100
+          border border-transparent
+          focus:outline-none
+          focus:ring-2
+          focus:ring-blue-500">
+      </div>
+
+      <div>
+        <label class="block mb-3 font-medium">
+          NIT / Cédula *
+        </label>
+
+        <input
+          type="text"
+          placeholder="900.123.456-7"
+          class="w-full h-14 px-5 rounded-2xl bg-zinc-100">
+      </div>
+
+      <div>
+        <label class="block mb-3 font-medium">
+          Sector económico *
+        </label>
+
+        <select
+          class="w-full h-14 px-5 rounded-2xl bg-zinc-100">
+
+          <option>Seleccionar...</option>
+
+        </select>
+      </div>
+
+      <div>
+        <label class="block mb-3 font-medium">
+          Tamaño de la empresa *
+        </label>
+
+        <select
+          class="w-full h-14 px-5 rounded-2xl bg-zinc-100">
+
+          <option>Seleccionar...</option>
+
+        </select>
+      </div>
+
+      <div>
+        <label class="block mb-3 font-medium">
+          Su rol en la organización *
+        </label>
+
+        <select
+          class="w-full h-14 px-5 rounded-2xl bg-zinc-100">
+
+          <option>Seleccionar...</option>
+
+        </select>
+      </div>
+
+      <div>
+        <label class="block mb-3 font-medium">
+          Correo electrónico *
+        </label>
+
+        <input
+          type="email"
+          placeholder="contacto@empresa.com"
+          class="w-full h-14 px-5 rounded-2xl bg-zinc-100">
+      </div>
+
+    </div>
+
+    <!-- INFO -->
+
+    <div
+      class="mt-10
+      rounded-2xl
+      bg-blue-50
+      border border-blue-100
+      p-5">
+
+      <p class="text-sm text-blue-700 leading-relaxed">
+
+        Los campos marcados con * son obligatorios.
+        Su información se utiliza exclusivamente para generar
+        el diagnóstico y no será compartida con terceros.
+
+      </p>
+
+    </div>
+
+  </section>
+
+  <!-- ACTION -->
+
+  <div class="max-w-3xl mx-auto flex justify-end mt-10">
+
+    <button
+      class="h-14 px-10
+      rounded-2xl
+      bg-blue-500
+      hover:bg-blue-600
+      text-white
+      font-medium
+      transition-all duration-200">
+
+      Iniciar cuestionario →
+
+    </button>
+
+  </div>
+
+</main>
+
+</body>
+</html>

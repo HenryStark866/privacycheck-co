@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<title>Diagnóstico de Cumplimiento</title>
+
+<style>
+body{
+  font-family:
+  "SF Pro Display",
+  "SF Pro Text",
+  -apple-system,
+  BlinkMacSystemFont,
+  system-ui,
+  sans-serif;
+}
+</style>
+
+</head>
+
+<body class="bg-zinc-50 text-zinc-900">
+
+<!-- NAVBAR -->
+
+<header class="bg-white border-b border-zinc-200">
+
+  <div class="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
+
+    <div class="flex items-center gap-3">
+
+      <div
+        class="w-8 h-8 rounded-xl bg-zinc-100 flex items-center justify-center">
+
+        🛡️
+
+      </div>
+
+      <span class="font-semibold">
+        PrivacyCheck CO
+      </span>
+
+      <span class="text-zinc-400">
+        · Ley 1581/2012
+      </span>
+
+    </div>
+
+    <div
+      class="w-9 h-9 rounded-full bg-slate-800 text-white text-sm flex items-center justify-center">
+
+      M
+
+    </div>
+
+  </div>
+
+</header>
+
+<!-- MAIN -->
+
+<main class="max-w-6xl mx-auto px-6 py-12">
+
+  <!-- STEPPER -->
+
+  <section class="mb-20">
+
+    <div class="flex items-center justify-center">
+
+      <div class="flex items-center w-full max-w-2xl">
+
+        <div class="flex flex-col items-center">
+          <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center">
+            ✓
+          </div>
+          <span class="text-sm mt-2">Perfil</span>
+        </div>
+
+        <div class="flex-1 h-px bg-blue-500 mx-4"></div>
+
+        <div class="flex flex-col items-center">
+          <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center">
+            ✓
+          </div>
+          <span class="text-sm mt-2">Cuestionario</span>
+        </div>
+
+        <div class="flex-1 h-px bg-blue-500 mx-4"></div>
+
+        <div class="flex flex-col items-center">
+          <div class="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center">
+            3
+          </div>
+          <span class="text-sm mt-2 font-medium">
+            Resultados
+          </span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- HERO -->
+
+  <section
+    class="bg-white rounded-3xl border border-zinc-200 p-10 shadow-sm mb-10">
+
+    <div class="flex flex-col lg:flex-row gap-10 items-center">
+
+      <!-- SCORE -->
+
+      <div
+        class="relative w-44 h-44 shrink-0">
+
+        <svg
+          class="w-full h-full -rotate-90"
+          viewBox="0 0 120 120">
+
+          <circle
+            cx="60"
+            cy="60"
+            r="50"
+            stroke="#E4E4E7"
+            stroke-width="10"
+            fill="none"/>
+
+          <circle
+            cx="60"
+            cy="60"
+            r="50"
+            stroke="#007AFF"
+            stroke-width="10"
+            fill="none"
+            stroke-linecap="round"
+            stroke-dasharray="314"
+            stroke-dashoffset="104"/>
+
+        </svg>
+
+        <div
+          class="absolute inset-0 flex flex-col items-center justify-center">
+
+          <span class="text-5xl font-semibold">
+            67%
+          </span>
+
+          <span class="text-zinc-500 text-sm">
+            Cumplimiento
+          </span>
+
+        </div>
+
+      </div>
+
+      <!-- RESUMEN -->
+
+      <div>
+
+        <p class="text-blue-500 font-medium mb-3">
+          Diagnóstico completado
+        </p>
+
+        <h1
+          class="text-4xl lg:text-5xl font-semibold tracking-tight">
+
+          Cumplimiento Moderado
+
+        </h1>
+
+        <p
+          class="mt-5 text-lg text-zinc-600 leading-relaxed max-w-2xl">
+
+          Su organización cumple parcialmente con los requisitos
+          evaluados. Se identificaron oportunidades de mejora en
+          gestión del consentimiento, seguridad de la información
+          y gobierno de datos personales.
+
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- CATEGORÍAS -->
+
+  <section
+    class="bg-white rounded-3xl border border-zinc-200 p-8 mb-10">
+
+    <h2 class="text-2xl font-semibold mb-8">
+      Categorías evaluadas
+    </h2>
+
+    <div class="space-y-6">
+
+      <div>
+        <div class="flex justify-between mb-2">
+          <span>Principios</span>
+          <span>50%</span>
+        </div>
+        <div class="h-2 bg-zinc-200 rounded-full">
+          <div class="h-2 w-1/2 bg-blue-500 rounded-full"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="flex justify-between mb-2">
+          <span>Autorización</span>
+          <span>13%</span>
+        </div>
+        <div class="h-2 bg-zinc-200 rounded-full">
+          <div class="h-2 w-[13%] bg-violet-500 rounded-full"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="flex justify-between mb-2">
+          <span>Aviso</span>
+          <span>100%</span>
+        </div>
+        <div class="h-2 bg-zinc-200 rounded-full">
+          <div class="h-2 w-full bg-emerald-500 rounded-full"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="flex justify-between mb-2">
+          <span>Derechos</span>
+          <span>75%</span>
+        </div>
+        <div class="h-2 bg-zinc-200 rounded-full">
+          <div class="h-2 w-3/4 bg-amber-500 rounded-full"></div>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- RIESGOS -->
+
+  <section class="mb-10">
+
+    <h2 class="text-2xl font-semibold mb-6">
+      Riesgos prioritarios
+    </h2>
+
+    <div class="grid md:grid-cols-3 gap-5">
+
+      <div class="bg-rose-50 border border-rose-200 rounded-2xl p-6">
+        <h3 class="font-semibold">Autorización</h3>
+        <p class="mt-2 text-sm text-zinc-600">
+          No existen mecanismos sólidos de consentimiento.
+        </p>
+      </div>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6">
+        <h3 class="font-semibold">Seguridad</h3>
+        <p class="mt-2 text-sm text-zinc-600">
+          Faltan controles técnicos y organizacionales.
+        </p>
+      </div>
+
+      <div class="bg-blue-50 border border-blue-200 rounded-2xl p-6">
+        <h3 class="font-semibold">Gobierno de datos</h3>
+        <p class="mt-2 text-sm text-zinc-600">
+          Procesos de tratamiento insuficientemente definidos.
+        </p>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- RECOMENDACIONES -->
+
+  <section class="mb-10">
+
+    <h2 class="text-2xl font-semibold mb-6">
+      Recomendaciones prioritarias
+    </h2>
+
+    <div class="space-y-4">
+
+      <article class="bg-white border border-zinc-200 rounded-2xl p-6">
+        <h3 class="font-semibold">
+          Implementar gestión de consentimiento
+        </h3>
+        <p class="mt-2 text-zinc-600">
+          Diseñe un mecanismo verificable para obtener,
+          registrar y administrar autorizaciones.
+        </p>
+      </article>
+
+      <article class="bg-white border border-zinc-200 rounded-2xl p-6">
+        <h3 class="font-semibold">
+          Definir controles de seguridad
+        </h3>
+        <p class="mt-2 text-zinc-600">
+          Documente medidas técnicas, organizacionales
+          y administrativas para proteger los datos.
+        </p>
+      </article>
+
+      <article class="bg-white border border-zinc-200 rounded-2xl p-6">
+        <h3 class="font-semibold">
+          Formalizar política de tratamiento
+        </h3>
+        <p class="mt-2 text-zinc-600">
+          Establezca reglas claras para recolección,
+          uso, conservación y eliminación de datos.
+        </p>
+      </article>
+
+    </div>
+
+  </section>
+
+  <!-- LEGAL -->
+
+  <details
+    class="bg-white border border-zinc-200 rounded-2xl p-6 mb-10">
+
+    <summary class="cursor-pointer font-medium">
+      Contexto legal aplicable
+    </summary>
+
+    <div class="mt-5 text-zinc-600 leading-relaxed">
+
+      Ley 1581 de 2012, Decreto 1377 de 2013 y
+      normativa complementaria expedida por la
+      Superintendencia de Industria y Comercio.
+
+    </div>
+
+  </details>
+
+  <!-- ACTIONS -->
+
+  <div class="flex justify-end gap-4">
+
+    <button
+      class="h-12 px-6 rounded-xl border border-zinc-300">
+
+      Exportar PDF
+
+    </button>
+
+    <button
+      class="h-12 px-6 rounded-xl bg-blue-500 text-white">
+
+      Nuevo diagnóstico
+
+    </button>
+
+  </div>
+
+</main>
+
+</body>
+</html>
+

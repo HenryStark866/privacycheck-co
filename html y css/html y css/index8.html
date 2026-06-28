@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrivacyCheck CO - Ley 1581/2012</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-[#F2F2F7] text-[#1C1C1E] font-sans antialiased min-h-screen pb-12">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-[#E5E5EA] px-6 py-3.5 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <div class="w-7 h-7 bg-[#007AFF] rounded-lg flex items-center justify-center text-white shadow-sm">
+                <i data-lucide="shield" class="w-4 h-4"></i>
+            </div>
+            <span class="font-semibold text-[17px] tracking-tight">PrivacyCheck CO</span>
+            <span class="text-[#8E8E93] text-[15px] mx-1">•</span>
+            <span class="text-[#8E8E93] text-[15px]">Ley 1581/2012</span>
+        </div>
+        
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-[#1C1C1E] rounded-full flex items-center justify-center text-white text-xs font-bold shadow-inner">
+                M
+            </div>
+            <span class="text-[15px] font-medium text-[#3A3A3C]">mi usuario</span>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 mt-8">
+        
+        <div class="relative flex justify-between items-center max-w-xl mx-auto mb-8">
+            <div class="absolute inset-0 top-4 h-0.5 bg-[#E5E5EA] -z-10 rounded-full"></div>
+            <div class="absolute left-0 top-4 w-1/2 h-0.5 bg-[#007AFF] -z-10 rounded-full"></div>
+
+            <div class="flex flex-col items-center gap-1.5">
+                <div class="w-8 h-8 bg-[#007AFF] rounded-full flex items-center justify-center text-white shadow-sm ring-4 ring-[#F2F2F7]">
+                    <i data-lucide="check" class="w-4 h-4 stroke-[3]"></i>
+                </div>
+                <span class="text-[13px] font-semibold text-[#007AFF]">Perfil</span>
+            </div>
+
+            <div class="flex flex-col items-center gap-1.5">
+                <div class="w-8 h-8 bg-[#007AFF] rounded-full flex items-center justify-center text-white font-bold shadow-sm ring-4 ring-[#F2F2F7] text-[15px]">
+                    2
+                </div>
+                <span class="text-[13px] font-semibold text-[#007AFF]">Cuestionario</span>
+            </div>
+
+            <div class="flex flex-col items-center gap-1.5">
+                <div class="w-8 h-8 bg-[#E5E5EA] rounded-full flex items-center justify-center text-[#8E8E93] font-bold ring-4 ring-[#F2F2F7] text-[15px]">
+                    3
+                </div>
+                <span class="text-[13px] font-medium text-[#8E8E93]">Resultados</span>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <div class="flex justify-between items-center text-[14px] mb-2 font-medium">
+                <span class="text-[#8E8E93]">0 de 24 preguntas respondidas</span>
+                <span class="text-[#007AFF] font-semibold">0% completado</span>
+            </div>
+            <div class="w-full h-2 bg-[#E5E5EA] rounded-full overflow-hidden">
+                <div class="w-[0%] h-full bg-[#007AFF] transition-all duration-300 rounded-full"></div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 mb-6 bg-[#E5E5EA]/50 p-1 rounded-xl overflow-x-auto whitespace-nowrap scrollbar-none">
+            <button class="px-3 py-1.5 rounded-lg text-[13px] font-medium bg-white shadow-sm text-[#3A3A3C]">0/4</button>
+            <button class="px-4 py-1.5 rounded-lg text-[14px] font-medium text-[#3A3A3C] hover:bg-white/50 transition">Autorización <span class="text-xs text-[#8E8E93]">0/4</span></button>
+            <button class="px-4 py-1.5 rounded-lg text-[14px] font-medium text-[#3A3A3C] hover:bg-white/50 transition">Aviso <span class="text-xs text-[#8E8E93]">0/4</span></button>
+            <button class="px-4 py-1.5 rounded-lg text-[14px] font-medium text-[#3A3A3C] hover:bg-white/50 transition">Derechos <span class="text-xs text-[#8E8E93]">0/4</span></button>
+            <button class="px-4 py-1.5 rounded-lg text-[14px] font-medium text-[#3A3A3C] hover:bg-white/50 transition">Seguridad <span class="text-xs text-[#8E8E93]">0/4</span></button>
+            <button class="px-5 py-1.5 rounded-lg text-[14px] font-semibold bg-[#007AFF] text-white shadow-sm flex items-center gap-1.5">
+                Privacy by Design <span class="opacity-80 text-xs">0/4</span>
+            </button>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-[#E5E5EA] overflow-hidden mb-6">
+            
+            <div class="bg-[#F2F2F7]/60 p-6 border-b border-[#E5E5EA] flex items-start gap-4">
+                <div class="w-10 h-10 bg-[#007AFF]/10 text-[#007AFF] rounded-xl flex items-center justify-center shrink-0">
+                    <i data-lucide="cpu" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <h2 class="text-[19px] font-bold tracking-tight text-[#1C1C1E]">Privacidad por Diseño</h2>
+                        <span class="bg-[#007AFF]/10 text-[#007AFF] text-[11px] font-semibold uppercase px-2 py-0.5 rounded-full tracking-wider">Principio Transversal</span>
+                    </div>
+                    <p class="text-[14px] text-[#3A3A3C] leading-relaxed">
+                        Evalúa si la privacidad se incorporó proactivamente como un requisito integral desde el inicio del diseño, no como un añadido posterior.
+                    </p>
+                </div>
+            </div>
+
+            <div class="divide-y divide-[#E5E5EA]">
+                
+                <div class="p-6 hover:bg-[#F2F2F7]/20 transition-colors">
+                    <div class="flex items-start gap-3.5 mb-4">
+                        <span class="w-6 h-6 bg-[#F2F2F7] text-[#3A3A3C] rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">1</span>
+                        <div class="flex justify-between items-start w-full gap-4">
+                            <p class="text-[15px] font-medium text-[#1C1C1E] leading-snug">¿La privacidad y protección de datos se incorporó como requisito desde las primeras etapas del diseño del producto o proceso?</p>
+                            <button class="text-[#8E8E93] hover:text-[#3A3A3C] transition shrink-0"><i data-lucide="help-circle" class="w-4.5 h-4.5"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2.5 pl-9">
+                        <button class="flex items-center gap-1.5 px-4 py-2 border border-[#E5E5EA] rounded-full text-[14px] font-medium text-[#34C759] hover:bg-[#34C759]/10 hover:border-[#34C759] transition-all bg-white shadow-2xs">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Sí
+                        </button>
+                        <button class="flex items-center gap-1.5 px-4 py-2 border border-[#E5E5EA] rounded-full text-[14px] font-medium text-[#FF9500] hover:bg-[#FF9500]/10 hover:border-[#FF9500] transition-all bg-white shadow-2xs">
+                            <i data-lucide="alert-triangle" class="w-4 h-4"></i> Parcialmente
+                        </button>
+                        <button class="flex items-center gap-1.5 px-4 py-2 border border-[#E5E5EA] rounded-full text-[14px] font-medium text-[#FF3B30] hover:bg-[#FF3B30]/10 hover:border-[#FF3B30] transition-all bg-white shadow-2xs">
+                            <i data-lucide="x-circle" class="w-4 h-4"></i> No
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-6 hover:bg-[#F2F2F7]/20 transition-colors">
+                    <div class="flex items-start gap-3.5 mb-4">
+                        <span class="w-6 h-6 bg-[#F2F2F7] text-[#3A3A3C] rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">2</span>
+                        <div class="flex justify-between items-start w-full gap-4">
+                            <p class="text-[15px] font-medium text-[#1C1C1E] leading-snug">¿Se realizó o está planificado un Análisis de Impacto en la Privacidad (PIA / EIPD) para el producto o proceso bajo evaluación?</p>
+                            <button class="text-[#8E8E93] hover:text-[#3A3A3C] transition shrink-0"><i data-lucide="help-circle" class="w-4.5 h-4.5"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2.5 pl-9">
+                        <button class="flex items-center gap-1.5 px-4 py-2 border border-[#E5E5EA] rounded-full text-[14px] font-medium text-[#34C759] hover:bg-[#34C759]/10 hover:border-[#34C759] transition-all bg-white shadow-2xs">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Sí
+                        </button>
+                        <button class="flex items-center gap-1.5 px-4 py-2 border border-[#E5E5EA] rounded-full text-[14px] font-medium text-[#FF9500] hover:bg-[#FF9500]/10 hover:border-[#FF9500] transition-all bg-white shadow-2xs">
+                            <i data-lucide="alert-triangle" class="w-4 h-4"></i> Parcialmente
+                        </button>
+                        <button class="flex items-center gap-1.5 px-4 py-2 border border-[#E5E5EA] rounded-full text-[14px] font-medium text-[#FF3B30] hover:bg-[#FF3B30]/10 hover:border-[#FF3B30] transition-all bg-white shadow-2xs">
+                            <i data-lucide="x-circle" class="w-4 h-4"></i> No
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-6 hover:bg-[#F2F2F7]/20 transition-colors">
+                    <div class="flex items-start gap-3.5 mb-4">
+                        <span class="w-6 h-6 bg-[#F2F2F7] text-[#3A3A3C] rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">3</span>
+                        <div class="flex justify-between items-start w-full gap-4">
+                            <p class="text-[15px] font-medium text-[#1C1C1E] leading-snug">¿Se ha evaluado la necesidad de designar un Oficial o Delegado de Protección de Datos (DPO) dentro de la organización?</p>
+                            <button class="text-[#8E8E93] hover:text-[#3A3A3C] transition shrink-0"><i data-lucide="help-circle" class="w-4.5 h-4.5"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2.5 pl-9">
+                        <button class="flex items-center gap-1.5 px-4 py-2 border border-[#E5E5EA] rounded-full text-[14px] font-medium text-[#34C759] hover:bg-[#34C759]/10 hover:border-[#34C759] transition-all bg-white shadow-2xs">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Sí
+                        </button>
+                        <button class="flex items-center gap-1.5 px-4 py-2 border border-[#E5E5EA] rounded-full text-[14px] font-medium text-[#FF9500] hover:bg-[#FF9500]/10 hover:border-[#FF9500] transition-all bg-white shadow-2xs">
+                            <i data-lucide="alert-triangle" class="w-4 h-4"></i> Parcialmente
+                        </button>
+                        <button class="flex items-center gap-1.5 px-4 py-2 border border-[#E5E5EA] rounded-full text-[14px] font-medium text-[#FF3B30] hover:bg-[#FF3B30]/10 hover:border-[#FF3B30] transition-all bg-white shadow-2xs">
+                            <i data-lucide="x-circle" class="w-4 h-4"></i> No
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-6 hover:bg-[#F2F2F7]/20 transition-colors">
+                    <div class="flex items-start gap-3.5 mb-4">
+                        <span class="w-6 h-6 bg-[#F2F2F7] text-[#3A3A3C] rounded-full flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">4</span>
+                        <div class="flex justify-between items-start w-full gap-4">
+                            <p class="text-[15px] font-medium text-[#1C1C1E] leading-snug">¿Se diseñaron procedimientos para gestionar transferencias internacionales de datos si el producto o servicio lo requiere?</p>
+                            <button class="text-[#8E8E93] hover:text-[#3A3A3C] transition shrink-0"><i data-lucide="help-circle" class="w-4.5 h-4.5"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2.5 pl-9">
+                        <button class="flex items-center gap-1.5 px-4 py-2 border border-[#E5E5EA] rounded-full text-[14px] font-medium text-[#34C759] hover:bg-[#34C759]/10 hover:border-[#34C759] transition-all bg-white shadow-2xs">
+                            <i data-lucide="check-circle-2" class="w-4 h-4"></i> Sí
+                        </button>
+                        <button class="flex items-center gap-1.5 px-4 py-2 border border-[#E5E5EA] rounded-full text-[14px] font-medium text-[#FF9500] hover:bg-[#FF9500]/10 hover:border-[#FF9500] transition-all bg-white shadow-2xs">
+                            <i data-lucide="alert-triangle" class="w-4 h-4"></i> Parcialmente
+                        </button>
+                        <button class="flex items-center gap-1.5 px-4 py-2 border border-[#E5E5EA] rounded-full text-[14px] font-medium text-[#FF3B30] hover:bg-[#FF3B30]/10 hover:border-[#FF3B30] transition-all bg-white shadow-2xs">
+                            <i data-lucide="x-circle" class="w-4 h-4"></i> No
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-[#8E8E93] font-medium px-2 mb-8">
+            <span class="flex items-center gap-1"><i data-lucide="check-circle-2" class="w-4 h-4 text-[#34C759]"></i> Sí — Completamente implementado</span>
+            <span class="flex items-center gap-1"><i data-lucide="alert-triangle" class="w-4 h-4 text-[#FF9500]"></i> Parcialmente — En proceso o incompleto</span>
+            <span class="flex items-center gap-1"><i data-lucide="x-circle" class="w-4 h-4 text-[#FF3B30]"></i> No — No implementado</span>
+        </div>
+
+        <div class="flex justify-between items-center pt-2 border-t border-[#E5E5EA]">
+            <button class="flex items-center gap-1.5 text-[15px] font-semibold text-[#007AFF] hover:opacity-80 transition bg-transparent py-2">
+                <i data-lucide="chevron-left" class="w-4 h-4 stroke-[2.5]"></i> Categoría anterior
+            </button>
+            
+            <button class="flex items-center gap-2 text-[15px] font-semibold bg-[#8E8E93] text-white px-5 py-2.5 rounded-xl cursor-not-allowed shadow-xs transition-all">
+                Generar diagnóstico <i data-lucide="arrow-right" class="w-4 h-4 stroke-[2.5]"></i>
+            </button>
+        </div>
+
+    </main>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
