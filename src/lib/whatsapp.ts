@@ -198,15 +198,15 @@ export async function setupWhatsAppWebhook(sessionId: string, appUrl: string) {
       return; // ya registrado
     }
 
+    // El gateway valida con forbidNonWhitelisted: solo acepta los campos del DTO
+    // (url, events, secret, headers, retryCount). Enviar name/retries/timeout → 400.
     const postRes = await fetch(`${OPENWA_API_URL}/api/sessions/${sessionId}/webhooks`, {
       method: 'POST',
       headers: headers(),
       body: JSON.stringify({
-        name: 'PrivacyCheck CO',
         url: webhookUrl,
         events: ['message.received'],
-        retries: 3,
-        timeout: 15000,
+        retryCount: 3,
       }),
     });
     if (postRes.ok) {
